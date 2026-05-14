@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Terminal, Wrench } from 'lucide-react';
+import { Send, Bot, User, Loader2, Terminal, Wrench, Database } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,19 +14,21 @@ interface ToolCallResult {
   tool: string;
   status: 'success' | 'error';
   message: string;
+  data?: Record<string, unknown>;
 }
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
   toolCalls?: ToolCallResult[];
+  isProcessing?: boolean;
 }
 
 const suggestions = [
   'إيه اللي عندي النهارده؟',
-  'أهم مهامي التقنية',
-  'حلّل مهامي',
+  'نظّم مهامي حسب الأولوية',
   'أجل مهمة مكالمة العميل لبكرة',
+  'حلّل مهامي التقنية',
 ];
 
 const msgVariants = {
@@ -38,7 +40,7 @@ export default function ChatPanel() {
   const queryClient = useQueryClient();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [agentPhase, setAgentPhase] = useState<'idle' | 'thinking' | 'executing' | 'responding'>('idle');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,27 +50,69 @@ export default function ChatPanel() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: msgs.map((m) => ({ role: m.role, content: m.content })),
+          messages: msgs
+            .filter((m) => m.role !== 'system')
+            .map((m) => ({ role: m.role, content: m.content })),
         }),
       });
       if (!res.ok) throw new Error('Failed to send message');
       return res.json();
     },
     onMutate: () => {
-      setIsTyping(true);
+      setAgentPhase('thinking');
     },
     onSuccess: (data) => {
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: data.reply || 'مفيش رد متاح دلوقتي.',
-        toolCalls: data.toolCalls || [],
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+      const hasToolCalls = data.toolCalls && data.toolCalls.length > 0;
 
-      if (data.toolCalls && data.toolCalls.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ['tasks'] });
-        queryClient.invalidateQueries({ queryKey: ['heatmap'] });
-        queryClient.invalidateQueries({ queryKey: ['weekly-score'] });
+      // If tools were executed, show the processing phase briefly
+      if (hasToolCalls) {
+        setAgentPhase('executing');
+
+        // Show a brief "updating database" indicator, then switch to responding
+        const processingMessage: Message = {
+          role: 'system',
+          content: 'زكي بيحدّث قاعدة البيانات...',
+          isProcessing: true,
+          toolCalls: data.toolCalls,
+        };
+
+        // Add processing indicator first
+        setMessages((prev) => [...prev, processingMessage]);
+
+        // After a brief moment, replace with the actual response
+        setTimeout(() => {
+          setMessages((prev) => {
+            // Remove the processing message
+            const filtered = prev.filter((m) => !m.isProcessing);
+            // Add the final assistant message
+            const assistantMessage: Message = {
+              role: 'assistant',
+              content: data.reply || 'تم التنفيذ.',
+              toolCalls: data.toolCalls,
+            };
+            return [...filtered, assistantMessage];
+          });
+          setAgentPhase('responding');
+
+          // Strict cache invalidation after tool execution
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          queryClient.invalidateQueries({ queryKey: ['heatmap'] });
+          queryClient.invalidateQueries({ queryKey: ['weekly-score'] });
+
+          // Also refetch immediately for instant UI sync
+          queryClient.refetchQueries({ queryKey: ['tasks'] });
+
+          setTimeout(() => setAgentPhase('idle'), 800);
+        }, 600);
+      } else {
+        // No tool calls — just show the response
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: data.reply || 'مفيش رد متاح دلوقتي.',
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+        setAgentPhase('responding');
+        setTimeout(() => setAgentPhase('idle'), 500);
       }
     },
     onError: () => {
@@ -77,9 +121,7 @@ export default function ChatPanel() {
         content: '⚠ ERR: فشل الاتصال — حاول تاني',
       };
       setMessages((prev) => [...prev, errorMessage]);
-    },
-    onSettled: () => {
-      setIsTyping(false);
+      setAgentPhase('idle');
     },
   });
 
@@ -87,21 +129,22 @@ export default function ChatPanel() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, [messages, agentPhase]);
 
   function handleSend() {
     if (!input.trim() || chatMutation.isPending) return;
     const userMessage: Message = { role: 'user', content: input.trim() };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const newMessages = [...messages];
+    setMessages([...newMessages, userMessage]);
     setInput('');
     chatMutation.mutate(newMessages);
   }
 
   function handleSuggestion(text: string) {
+    if (chatMutation.isPending) return;
     const userMessage: Message = { role: 'user', content: text };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const newMessages = [...messages];
+    setMessages([...newMessages, userMessage]);
     chatMutation.mutate(newMessages);
   }
 
@@ -118,7 +161,25 @@ export default function ChatPanel() {
         <CardTitle className="text-sm font-bold text-accent-brand dark:neon-glow-subtle flex items-center gap-2">
           <Terminal className="size-3.5" />
           زكي
-          <span className="text-[9px] font-mono text-muted-foreground font-normal ml-2">v2.0 // AI Agent</span>
+          <span className="text-[9px] font-mono text-muted-foreground font-normal ml-2">v2.0 // Agent</span>
+          {agentPhase !== 'idle' && (
+            <Badge
+              variant="outline"
+              className={`text-[8px] px-1.5 py-0 h-4 ml-1 font-mono ${
+                agentPhase === 'thinking'
+                  ? 'border-accent-brand/30 text-accent-brand'
+                  : agentPhase === 'executing'
+                    ? 'border-cyber-yellow/30 text-cyber-yellow'
+                    : 'border-accent-brand/30 text-accent-brand'
+              }`}
+            >
+              {agentPhase === 'thinking'
+                ? 'THINKING'
+                : agentPhase === 'executing'
+                  ? 'EXECUTING'
+                  : 'RESPONDING'}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3 p-3 pt-3 overflow-hidden">
@@ -134,7 +195,7 @@ export default function ChatPanel() {
                     أهلاً! أنا زكي ⚡
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 font-mono">
-                    {'>'} مساعدك التقني — أقدر أضيف، أعدّل، وأشطب مهامك
+                    {'>'} Agent ذكي — أشوف مهامك وأقدر أنفذ أوامر مباشرة
                   </p>
                 </div>
                 <div className="flex flex-col gap-1.5 w-full">
@@ -161,65 +222,84 @@ export default function ChatPanel() {
                     initial="initial"
                     animate="animate"
                     className={`flex gap-2 ${
-                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                      msg.role === 'user'
+                        ? 'justify-end'
+                        : msg.role === 'system'
+                          ? 'justify-center'
+                          : 'justify-start'
                     }`}
                   >
-                    {msg.role === 'assistant' && (
-                      <div className="size-6 rounded bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="size-3.5 text-accent-brand" />
+                    {/* System messages (processing indicators) */}
+                    {msg.role === 'system' && msg.isProcessing && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyber-yellow/5 border border-cyber-yellow/20 text-[11px] font-mono">
+                        <Database className="size-3 text-cyber-yellow animate-pulse" />
+                        <span className="text-cyber-yellow">{msg.content}</span>
+                        <Loader2 className="size-3 text-cyber-yellow animate-spin" />
                       </div>
                     )}
-                    <div className="max-w-[85%] flex flex-col gap-1.5">
-                      <div
-                        className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
-                          msg.role === 'user'
-                            ? 'bg-surface-alt text-foreground border border-border'
-                            : 'bg-accent-brand/5 text-foreground border border-accent-brand/15'
-                        }`}
-                      >
-                        <span className="font-mono whitespace-pre-wrap">{msg.content}</span>
-                      </div>
-                      {/* Tool call indicators */}
-                      {msg.toolCalls && msg.toolCalls.length > 0 && (
-                        <div className="flex flex-col gap-1">
-                          {msg.toolCalls.map((tc, tcIdx) => (
-                            <div
-                              key={tcIdx}
-                              className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono border ${
-                                tc.status === 'success'
-                                  ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
-                                  : 'bg-destructive/5 border-destructive/20 text-destructive'
-                              }`}
-                            >
-                              <Wrench className="size-3" />
-                              <span className="font-semibold">{tc.tool}</span>
-                              <span className="text-muted-foreground">→</span>
-                              <span>{tc.message}</span>
-                              {tc.status === 'success' ? (
-                                <Badge className="bg-accent-brand/10 text-accent-brand text-[8px] px-1 py-0 h-3.5 border-0">OK</Badge>
-                              ) : (
-                                <Badge className="bg-destructive/10 text-destructive text-[8px] px-1 py-0 h-3.5 border-0">ERR</Badge>
-                              )}
-                            </div>
-                          ))}
+
+                    {/* Assistant messages */}
+                    {msg.role === 'assistant' && (
+                      <>
+                        <div className="size-6 rounded bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center shrink-0 mt-1">
+                          <Bot className="size-3.5 text-accent-brand" />
                         </div>
-                      )}
-                    </div>
+                        <div className="max-w-[85%] flex flex-col gap-1.5">
+                          <div className="rounded-xl px-3 py-2 text-sm leading-relaxed bg-accent-brand/5 text-foreground border border-accent-brand/15">
+                            <span className="font-mono whitespace-pre-wrap">{msg.content}</span>
+                          </div>
+                          {/* Tool call indicators */}
+                          {msg.toolCalls && msg.toolCalls.length > 0 && (
+                            <div className="flex flex-col gap-1">
+                              {msg.toolCalls.map((tc, tcIdx) => (
+                                <div
+                                  key={tcIdx}
+                                  className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono border ${
+                                    tc.status === 'success'
+                                      ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
+                                      : 'bg-destructive/5 border-destructive/20 text-destructive'
+                                  }`}
+                                >
+                                  <Wrench className="size-3" />
+                                  <span className="font-semibold">{tc.tool}</span>
+                                  <span className="text-muted-foreground">→</span>
+                                  <span className="truncate">{tc.message}</span>
+                                  {tc.status === 'success' ? (
+                                    <Badge className="bg-accent-brand/10 text-accent-brand text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">OK</Badge>
+                                  ) : (
+                                    <Badge className="bg-destructive/10 text-destructive text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">ERR</Badge>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {/* User messages */}
                     {msg.role === 'user' && (
-                      <div className="size-6 rounded bg-surface-alt border border-border flex items-center justify-center shrink-0 mt-1">
-                        <User className="size-3.5 text-muted-foreground" />
-                      </div>
+                      <>
+                        <div className="max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed bg-surface-alt text-foreground border border-border">
+                          <span className="whitespace-pre-wrap">{msg.content}</span>
+                        </div>
+                        <div className="size-6 rounded bg-surface-alt border border-border flex items-center justify-center shrink-0 mt-1">
+                          <User className="size-3.5 text-muted-foreground" />
+                        </div>
+                      </>
                     )}
                   </motion.div>
                 ))}
               </AnimatePresence>
             )}
-            {isTyping && (
+
+            {/* Thinking indicator */}
+            {agentPhase === 'thinking' && (
               <div className="flex gap-2 justify-start">
                 <div className="size-6 rounded bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center shrink-0 mt-1">
                   <Bot className="size-3.5 text-accent-brand" />
                 </div>
-                <div className="bg-accent-brand/5 border border-accent-brand/15 rounded-xl px-4 py-2.5 flex items-center gap-1">
+                <div className="bg-accent-brand/5 border border-accent-brand/15 rounded-xl px-4 py-2.5 flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:0ms]" />
                   <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:150ms]" />
                   <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:300ms]" />
