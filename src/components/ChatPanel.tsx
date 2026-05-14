@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Terminal, Wrench } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,11 @@ const suggestions = [
   'حلّل مهامي',
   'أجل مهمة مكالمة العميل لبكرة',
 ];
+
+const msgVariants = {
+  initial: { opacity: 0, y: 6, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+};
 
 export default function ChatPanel() {
   const queryClient = useQueryClient();
@@ -59,7 +65,6 @@ export default function ChatPanel() {
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Invalidate queries if tool calls were executed
       if (data.toolCalls && data.toolCalls.length > 0) {
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         queryClient.invalidateQueries({ queryKey: ['heatmap'] });
@@ -110,8 +115,8 @@ export default function ChatPanel() {
   return (
     <Card className="border-0 rounded-none bg-transparent flex flex-col h-full shadow-none">
       <CardHeader className="pb-2 shrink-0 border-b border-border">
-        <CardTitle className="text-base font-bold text-neon neon-glow-subtle flex items-center gap-2">
-          <Terminal className="size-4" />
+        <CardTitle className="text-sm font-bold text-accent-brand dark:neon-glow-subtle flex items-center gap-2">
+          <Terminal className="size-3.5" />
           زكي
           <span className="text-[9px] font-mono text-muted-foreground font-normal ml-2">v2.0 // AI Agent</span>
         </CardTitle>
@@ -121,11 +126,11 @@ export default function ChatPanel() {
           <div className="flex flex-col gap-3 pb-2">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <div className="size-14 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center neon-border-glow">
-                  <Bot className="size-7 text-neon" />
+                <div className="size-12 rounded-lg bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center dark:neon-border-glow">
+                  <Bot className="size-6 text-accent-brand" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-neon neon-glow-subtle">
+                  <p className="text-sm font-medium text-accent-brand">
                     أهلاً! أنا زكي ⚡
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 font-mono">
@@ -138,35 +143,38 @@ export default function ChatPanel() {
                       key={s}
                       variant="outline"
                       size="sm"
-                      className="text-xs border-neon/20 text-neon/80 hover:bg-neon/10 hover:text-neon justify-start h-8"
+                      className="text-xs border-accent-brand/20 text-accent-brand/80 hover:bg-accent-brand/5 hover:text-accent-brand justify-start h-8"
                       onClick={() => handleSuggestion(s)}
                       disabled={chatMutation.isPending}
                     >
-                      {'>'} {s}
+                      {'> '} {s}
                     </Button>
                   ))}
                 </div>
               </div>
             ) : (
-              <>
+              <AnimatePresence initial={false}>
                 {messages.map((msg, idx) => (
-                  <div
+                  <motion.div
                     key={idx}
+                    variants={msgVariants}
+                    initial="initial"
+                    animate="animate"
                     className={`flex gap-2 ${
                       msg.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="size-6 rounded bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="size-3.5 text-neon" />
+                      <div className="size-6 rounded bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center shrink-0 mt-1">
+                        <Bot className="size-3.5 text-accent-brand" />
                       </div>
                     )}
                     <div className="max-w-[85%] flex flex-col gap-1.5">
                       <div
                         className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
                           msg.role === 'user'
-                            ? 'bg-surface-alt text-slate-200 border border-border'
-                            : 'bg-neon/5 text-slate-200 border border-neon/20'
+                            ? 'bg-surface-alt text-foreground border border-border'
+                            : 'bg-accent-brand/5 text-foreground border border-accent-brand/15'
                         }`}
                       >
                         <span className="font-mono whitespace-pre-wrap">{msg.content}</span>
@@ -179,8 +187,8 @@ export default function ChatPanel() {
                               key={tcIdx}
                               className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono border ${
                                 tc.status === 'success'
-                                  ? 'bg-neon/5 border-neon/20 text-neon'
-                                  : 'bg-red-500/5 border-red-500/20 text-red-400'
+                                  ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
+                                  : 'bg-destructive/5 border-destructive/20 text-destructive'
                               }`}
                             >
                               <Wrench className="size-3" />
@@ -188,9 +196,9 @@ export default function ChatPanel() {
                               <span className="text-muted-foreground">→</span>
                               <span>{tc.message}</span>
                               {tc.status === 'success' ? (
-                                <Badge className="bg-neon/10 text-neon text-[8px] px-1 py-0 h-3.5 border-0">OK</Badge>
+                                <Badge className="bg-accent-brand/10 text-accent-brand text-[8px] px-1 py-0 h-3.5 border-0">OK</Badge>
                               ) : (
-                                <Badge className="bg-red-500/10 text-red-400 text-[8px] px-1 py-0 h-3.5 border-0">ERR</Badge>
+                                <Badge className="bg-destructive/10 text-destructive text-[8px] px-1 py-0 h-3.5 border-0">ERR</Badge>
                               )}
                             </div>
                           ))}
@@ -202,21 +210,21 @@ export default function ChatPanel() {
                         <User className="size-3.5 text-muted-foreground" />
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ))}
-                {isTyping && (
-                  <div className="flex gap-2 justify-start">
-                    <div className="size-6 rounded bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0 mt-1">
-                      <Bot className="size-3.5 text-neon" />
-                    </div>
-                    <div className="bg-neon/5 border border-neon/20 rounded-xl px-4 py-2.5 flex items-center gap-1">
-                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:0ms]" />
-                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:150ms]" />
-                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                )}
-              </>
+              </AnimatePresence>
+            )}
+            {isTyping && (
+              <div className="flex gap-2 justify-start">
+                <div className="size-6 rounded bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center shrink-0 mt-1">
+                  <Bot className="size-3.5 text-accent-brand" />
+                </div>
+                <div className="bg-accent-brand/5 border border-accent-brand/15 rounded-xl px-4 py-2.5 flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:0ms]" />
+                  <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:150ms]" />
+                  <span className="size-1.5 rounded-full bg-accent-brand animate-bounce [animation-delay:300ms]" />
+                </div>
+              </div>
             )}
           </div>
         </ScrollArea>
@@ -229,12 +237,12 @@ export default function ChatPanel() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="اكتب أمر هنا..."
-            className="flex-1 bg-surface-alt border-border text-slate-200 placeholder:text-muted-foreground focus:border-neon/50 focus:ring-neon/20 text-sm"
+            className="flex-1 bg-surface-alt border-border text-foreground placeholder:text-muted-foreground focus:border-accent-brand/50 focus:ring-accent-brand/20 text-sm"
             disabled={chatMutation.isPending}
           />
           <Button
             size="icon"
-            className="bg-neon hover:bg-neon-dim text-background shrink-0"
+            className="bg-accent-brand hover:bg-accent-brand-dim text-white shrink-0"
             onClick={handleSend}
             disabled={!input.trim() || chatMutation.isPending}
           >

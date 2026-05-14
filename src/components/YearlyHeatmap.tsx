@@ -29,13 +29,13 @@ const arabicMonthNames = [
 
 const arabicDayAbbr = ['س', 'ر', 'خ', 'ج', 'ن', 'ث', ''];
 
-// Cyberpunk neon-green heatmap levels
+// Theme-aware heatmap levels — teal in light, neon green in dark
 const levelColors: Record<number, string> = {
-  0: 'bg-slate-800/50',
-  1: 'bg-neon/10',
-  2: 'bg-neon/25',
-  3: 'bg-neon/50',
-  4: 'bg-neon/80',
+  0: 'bg-border/40',
+  1: 'bg-accent-brand/10',
+  2: 'bg-accent-brand/25',
+  3: 'bg-accent-brand/50',
+  4: 'bg-accent-brand/80',
 };
 
 export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
@@ -125,7 +125,7 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
   return (
     <Card className="border-border bg-card/60 backdrop-blur-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-bold text-neon neon-glow-subtle flex items-center gap-2">
+        <CardTitle className="text-lg font-bold text-accent-brand flex items-center gap-2">
           <Activity className="size-4" />
           خريطة النشاط
           <span className="text-[10px] font-mono text-muted-foreground font-normal">{currentYear}</span>
@@ -174,15 +174,15 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
                           <button
                             className={`w-[11px] h-[11px] rounded-[2px] transition-all ${
                               levelColors[cell.level] || levelColors[0]
-                            } ${isToday ? 'ring-2 ring-neon ring-offset-1 ring-offset-card' : ''} ${
-                              isHovered ? 'scale-125 shadow-[0_0_6px_rgba(0,255,136,0.5)]' : ''
+                            } ${isToday ? 'ring-2 ring-accent-brand ring-offset-1 ring-offset-card' : ''} ${
+                              isHovered ? 'scale-125 dark:shadow-[0_0_6px_rgba(0,255,136,0.5)]' : ''
                             } hover:scale-110 cursor-pointer`}
                             onClick={() => onDayClick(cell.date)}
                             onMouseEnter={() => setHoveredCell(cell.date)}
                             onMouseLeave={() => setHoveredCell(null)}
                           />
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs bg-card border-border text-slate-200">
+                        <TooltipContent side="top" className="text-xs bg-card border-border text-foreground">
                           <span className="font-mono">
                             {cell.date} — {cell.done}/{cell.total} مهمة
                           </span>

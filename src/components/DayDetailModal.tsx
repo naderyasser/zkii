@@ -92,7 +92,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-neon neon-glow-subtle flex items-center gap-2">
+          <DialogTitle className="text-accent-brand flex items-center gap-2">
             <Terminal className="size-4" />
             {date ? formatDateAr(date) : ''}
           </DialogTitle>
@@ -101,7 +101,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <Loader2 className="size-6 animate-spin text-neon" />
+              <Loader2 className="size-6 animate-spin text-accent-brand" />
               <span className="text-sm font-mono">{'>'} loading day data...</span>
             </div>
           </div>
@@ -110,13 +110,13 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               <div className="flex flex-col items-center p-3 rounded-lg bg-surface-alt border border-border">
-                <span className="text-2xl font-bold text-neon font-mono">
+                <span className="text-2xl font-bold text-accent-brand font-mono">
                   {dayDetail.totalTasks}
                 </span>
                 <span className="text-[10px] text-muted-foreground">إجمالي المهام</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-neon/5 border border-neon/20">
-                <span className="text-2xl font-bold text-neon font-mono">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
+                <span className="text-2xl font-bold text-accent-brand font-mono">
                   {dayDetail.completedTasks}
                 </span>
                 <span className="text-[10px] text-muted-foreground">مكتملة</span>
@@ -131,26 +131,26 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
 
             <Progress
               value={dayDetail.productivityScore}
-              className="h-2 [&>div]:bg-neon"
+              className="h-2 [&>div]:bg-accent-brand"
             />
 
             {/* AI Summary */}
             {dayDetail.summary ? (
-              <div className="p-4 rounded-lg bg-neon/5 border border-neon/20">
+              <div className="p-4 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Sparkles className="size-4 text-neon" />
-                  <span className="text-sm font-semibold text-neon">
+                  <Sparkles className="size-4 text-accent-brand" />
+                  <span className="text-sm font-semibold text-accent-brand">
                     تحليل زكي
                   </span>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
+                <p className="text-sm text-foreground leading-relaxed font-mono whitespace-pre-wrap">
                   {dayDetail.summary}
                 </p>
               </div>
             ) : (
               <Button
                 variant="outline"
-                className="w-full border-neon/30 text-neon hover:bg-neon/10 gap-1.5"
+                className="w-full border-accent-brand/30 text-accent-brand hover:bg-accent-brand/10 gap-1.5"
                 onClick={() => {
                   if (date) generateSummaryMutation.mutate(date);
                 }}
@@ -184,7 +184,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
                         className="flex items-center gap-2 p-2 rounded-md border border-border bg-surface-alt/50"
                       >
                         {task.status === 'done' ? (
-                          <CheckCircle2 className="size-4 text-neon shrink-0" />
+                          <CheckCircle2 className="size-4 text-accent-brand shrink-0" />
                         ) : (
                           <Circle className="size-4 text-muted-foreground shrink-0" />
                         )}
@@ -192,7 +192,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
                           className={`text-sm flex-1 font-mono ${
                             task.status === 'done'
                               ? 'line-through text-muted-foreground'
-                              : 'text-slate-300'
+                              : 'text-foreground'
                           }`}
                         >
                           {task.title}

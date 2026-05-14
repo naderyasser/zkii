@@ -8,6 +8,7 @@ import YearlyHeatmap from '@/components/YearlyHeatmap';
 import ChatPanel from '@/components/ChatPanel';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import DayDetailModal from '@/components/DayDetailModal';
+import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 
 type MainTab = 'tasks' | 'heatmap';
@@ -24,26 +25,27 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background cyber-scanline">
+    <div className="min-h-screen flex flex-col bg-background dark:cyber-scanline">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center neon-border-glow">
-              <Terminal className="size-5 text-neon" />
+            <div className="size-9 rounded-lg bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center dark:neon-border-glow">
+              <Terminal className="size-4 text-accent-brand" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-neon neon-glow-subtle tracking-wide">زكي</h1>
-              <p className="text-[11px] text-muted-foreground font-mono -mt-0.5">v2.0 // مساعدك التقني الذكي</p>
+              <h1 className="text-lg font-bold text-accent-brand dark:neon-glow-subtle tracking-wide">زكي</h1>
+              <p className="text-[10px] text-muted-foreground font-mono -mt-0.5">v2.0 // مساعدك التقني الذكي</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <WeeklyScore />
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
-              className="size-9 text-muted-foreground hover:text-neon hover:bg-neon/10 border border-border"
+              className="size-9 text-muted-foreground hover:text-accent-brand hover:bg-accent-brand/10 border border-border"
               onClick={() => setChatOpen((prev) => !prev)}
               title={chatOpen ? 'إخفاء الشات' : 'إظهار الشات'}
             >
@@ -57,23 +59,23 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content: Sidebar + Canvas */}
+      {/* Main Content: Canvas + Sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Main Canvas */}
-        <main className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="max-w-3xl mx-auto flex flex-col gap-6">
-            {/* Pomodoro Timer */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
+          <div className="max-w-3xl mx-auto flex flex-col gap-5">
+            {/* Pomodoro Pill Widget */}
             <PomodoroTimer />
 
-            {/* Tab switcher for Tasks / Heatmap */}
+            {/* Tab switcher */}
             <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-alt border border-border w-fit">
               <Button
                 variant="ghost"
                 size="sm"
-                className={`text-xs h-7 px-3 rounded-md transition-colors ${
+                className={`text-xs h-7 px-3 rounded-md transition-all ${
                   mainTab === 'tasks'
-                    ? 'bg-neon/10 text-neon'
-                    : 'text-muted-foreground hover:text-slate-300'
+                    ? 'bg-card text-accent-brand shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setMainTab('tasks')}
               >
@@ -83,10 +85,10 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`text-xs h-7 px-3 rounded-md transition-colors ${
+                className={`text-xs h-7 px-3 rounded-md transition-all ${
                   mainTab === 'heatmap'
-                    ? 'bg-neon/10 text-neon'
-                    : 'text-muted-foreground hover:text-slate-300'
+                    ? 'bg-card text-accent-brand shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setMainTab('heatmap')}
               >
@@ -95,7 +97,7 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Main content based on tab */}
+            {/* Main content */}
             {mainTab === 'tasks' ? (
               <TaskList />
             ) : (
@@ -104,9 +106,9 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Chat Sidebar */}
+        {/* Chat Sidebar — slightly different shade for depth */}
         <aside
-          className={`border-r border-border bg-card/40 backdrop-blur-sm transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`border-r border-border bg-sidebar transition-all duration-300 ease-in-out overflow-hidden ${
             chatOpen ? 'w-[380px] min-w-[340px]' : 'w-0 min-w-0'
           }`}
         >

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/components/QueryProvider";
@@ -30,12 +31,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${cairo.variable} ${jetbrainsMono.variable} font-[family-name:var(--font-cairo)] antialiased bg-background text-foreground`}>
-        <QueryProvider>
-          {children}
-        </QueryProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange={false}
+        >
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -121,3 +121,46 @@ Stage Summary:
 - Tool call indicators in ChatPanel show real-time feedback for AI actions
 - React Query cache invalidation ensures UI updates instantly after tool mutations
 - Lint passes clean, all endpoints returning 200
+
+---
+Task ID: 6
+Agent: Main Orchestrator
+Task: Zen Light Mode + Pomodoro Redesign + Fluid Task Logic + Theme System
+
+Work Log:
+- Installed next-themes and framer-motion packages
+- Rewrote globals.css: Dual theme system with CSS variables
+  - Light mode (default): Off-white #FDFCF8 bg, white cards with shadow-sm, slate-800 text, teal #0d9488 accent
+  - Dark mode (.dark): Cyberpunk neon green #00ff88, dark backgrounds, glow effects
+  - All glow/scanline effects scoped to .dark class only
+  - Added accent-brand-glow CSS class (dark-mode-only SVG drop-shadow)
+  - Smooth theme transitions on bg, border, color properties
+- Updated layout.tsx: Added ThemeProvider from next-themes, removed hardcoded dark class
+- Created ThemeToggle.tsx: Sun/Moon toggle button in header
+- Redesigned PomodoroTimer.tsx: Horizontal pill widget instead of large card
+  - Compact layout: mode badge + timer display + mini progress bar + controls + task attachment
+  - Takes minimal vertical space, sits above task filters
+- Updated page.tsx: Added ThemeToggle, sidebar uses bg-sidebar for depth, cleaner tab styling
+- Updated TaskList.tsx with major UX improvements:
+  - Inline editing: Click task title → turns into input field, Enter to save, Escape to cancel
+  - updateTaskMutation using PATCH /api/tasks/[id]
+  - framer-motion AnimatePresence for task add/remove/complete animations
+  - Task cards with hover:-translate-y-0.5 hover:shadow-md for lift effect
+  - Rounded-xl cards instead of flat rows
+  - Pencil icon appears on hover for edit hint
+- Updated all 8 components for dual-theme support:
+  - Replaced text-neon/bg-neon with text-accent-brand/bg-accent-brand throughout
+  - Replaced neon-glow-subtle with text-accent-brand (glow only in dark mode)
+  - Replaced text-slate-200/300 with text-foreground
+  - All components use CSS variable-backed tokens that auto-switch themes
+- Verified lint passes clean, all API endpoints return 200
+- Tested: inline editing API, chat tool calling, theme toggle
+
+Stage Summary:
+- Dual theme system: Zen Light (off-white/cream + teal) and Cyberpunk Dark (neon green)
+- next-themes integration with smooth Sun/Moon toggle
+- Pomodoro redesigned as sleek horizontal pill widget
+- Task inline editing with PATCH API + React Query invalidation
+- framer-motion animations for task list (slide, fade, scale)
+- Interactive card-style task items with hover lift effect
+- All components work seamlessly in both themes

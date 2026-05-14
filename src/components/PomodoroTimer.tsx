@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Play, Pause, RotateCcw, Timer, Coffee, Link2, Unlink, CheckCircle2, Circle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Play, Pause, RotateCcw, Coffee, Link2, Unlink, CheckCircle2, Circle, Timer } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -19,6 +17,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Task {
   id: string;
@@ -30,8 +29,8 @@ interface Task {
 
 type TimerMode = 'focus' | 'break';
 
-const FOCUS_DURATION = 25 * 60; // 25 minutes
-const BREAK_DURATION = 5 * 60;  // 5 minutes
+const FOCUS_DURATION = 25 * 60;
+const BREAK_DURATION = 5 * 60;
 
 export default function PomodoroTimer() {
   const queryClient = useQueryClient();
@@ -42,7 +41,6 @@ export default function PomodoroTimer() {
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch pending tasks for attachment
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ['tasks', 'all'],
     queryFn: async () => {
@@ -61,7 +59,6 @@ export default function PomodoroTimer() {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }, []);
 
-  // Timer tick
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
@@ -69,12 +66,8 @@ export default function PomodoroTimer() {
           if (prev <= 1) {
             clearInterval(intervalRef.current!);
             setIsRunning(false);
-            // Timer finished
-            if (mode === 'focus') {
-              // Focus session complete — prompt user to mark task done
-              if (attachedTaskId) {
-                setShowCompleteDialog(true);
-              }
+            if (mode === 'focus' && attachedTaskId) {
+              setShowCompleteDialog(true);
             }
             return 0;
           }
@@ -87,10 +80,9 @@ export default function PomodoroTimer() {
     };
   }, [isRunning, mode, attachedTaskId]);
 
-  // Update document title with timer
   useEffect(() => {
     if (isRunning) {
-      document.title = `${formatTime(timeLeft)} — ${mode === 'focus' ? '🎯 تركيز' : '☕ استراحة'} | زكي`;
+      document.title = `${formatTime(timeLeft)} — ${mode === 'focus' ? '🎯' : '☕'} | زكي`;
     } else {
       document.title = 'زكي — مساعدك الشخصي';
     }
@@ -124,184 +116,131 @@ export default function PomodoroTimer() {
     }
     setAttachedTaskId(null);
     setShowCompleteDialog(false);
-    // Auto-switch to break
     switchMode('break');
   }
 
-  // Progress percentage for the circular indicator
   const totalDuration = mode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
   const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
-  const circumference = 2 * Math.PI * 42;
-  const offset = circumference - (progress / 100) * circumference;
 
   return (
     <>
-      <Card className="border-border bg-card/60 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-neon neon-glow-subtle flex items-center gap-2">
-              <Timer className="size-4" />
-              بومودورو
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={mode === 'focus' ? 'default' : 'ghost'}
-                size="sm"
-                className={`text-xs h-7 px-2.5 ${
-                  mode === 'focus'
-                    ? 'bg-neon/10 text-neon border border-neon/30 hover:bg-neon/20'
-                    : 'text-muted-foreground hover:text-slate-300'
-                }`}
-                onClick={() => switchMode('focus')}
-              >
-                🎯 تركيز
-              </Button>
-              <Button
-                variant={mode === 'break' ? 'default' : 'ghost'}
-                size="sm"
-                className={`text-xs h-7 px-2.5 ${
-                  mode === 'break'
-                    ? 'bg-cyber-yellow/10 text-cyber-yellow border border-cyber-yellow/30 hover:bg-cyber-yellow/20'
-                    : 'text-muted-foreground hover:text-slate-300'
-                }`}
-                onClick={() => switchMode('break')}
-              >
-                ☕ استراحة
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 pb-4">
-          {/* Circular Timer */}
-          <div className="relative w-36 h-36">
-            <svg className="w-36 h-36 -rotate-90" viewBox="0 0 96 96">
-              <circle
-                cx="48"
-                cy="48"
-                r="42"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="5"
-                className={mode === 'focus' ? 'text-neon/10' : 'text-cyber-yellow/10'}
-              />
-              <circle
-                cx="48"
-                cy="48"
-                r="42"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="5"
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                strokeLinecap="round"
-                className={`transition-all duration-1000 ${
-                  mode === 'focus' ? 'text-neon' : 'text-cyber-yellow'
-                }`}
-                style={{
-                  filter: mode === 'focus'
-                    ? 'drop-shadow(0 0 6px rgba(0, 255, 136, 0.5))'
-                    : 'drop-shadow(0 0 6px rgba(255, 230, 0, 0.5))',
-                }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className={`text-3xl font-bold font-mono ${
-                  mode === 'focus' ? 'text-neon neon-glow-subtle' : 'text-cyber-yellow'
-                }`}
-              >
-                {formatTime(timeLeft)}
-              </span>
-              <span className="text-[10px] text-muted-foreground font-mono">
-                {mode === 'focus' ? 'FOCUS' : 'BREAK'}
-              </span>
-            </div>
-          </div>
+      {/* ── Horizontal Pill Widget ──────────────────────────────────────── */}
+      <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-card border border-border shadow-sm">
+        {/* Mode badge */}
+        <button
+          onClick={() => switchMode(mode === 'focus' ? 'break' : 'focus')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+            mode === 'focus'
+              ? 'bg-accent-brand/10 text-accent-brand'
+              : 'bg-cyber-yellow/10 text-cyber-yellow dark:text-cyber-yellow'
+          }`}
+        >
+          {mode === 'focus' ? <Timer className="size-3" /> : <Coffee className="size-3" />}
+          {mode === 'focus' ? 'تركيز' : 'استراحة'}
+        </button>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-9 border-border text-muted-foreground hover:text-slate-300 hover:bg-surface-alt"
-              onClick={resetTimer}
-            >
-              <RotateCcw className="size-4" />
-            </Button>
-            <Button
-              size="icon"
-              className={`size-12 rounded-full ${
-                mode === 'focus'
-                  ? 'bg-neon hover:bg-neon-dim text-background neon-border-glow'
-                  : 'bg-cyber-yellow hover:bg-yellow-400 text-background'
+        {/* Timer display */}
+        <div className="flex items-center gap-2">
+          <span className={`text-2xl font-bold font-mono tabular-nums ${
+            mode === 'focus' ? 'text-accent-brand' : 'text-cyber-yellow'
+          }`}>
+            {formatTime(timeLeft)}
+          </span>
+
+          {/* Mini progress bar */}
+          <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ${
+                mode === 'focus' ? 'bg-accent-brand' : 'bg-cyber-yellow'
               }`}
-              onClick={toggleTimer}
-            >
-              {isRunning ? (
-                <Pause className="size-5" />
-              ) : (
-                <Play className="size-5 mr-[-2px]" />
-              )}
-            </Button>
-            <div className="w-9" /> {/* Spacer for alignment */}
+              style={{ width: `${progress}%` }}
+            />
           </div>
+        </div>
 
-          {/* Task Attachment */}
-          <div className="w-full flex flex-col gap-2">
-            {attachedTask ? (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-neon/5 border border-neon/20">
-                <CheckCircle2 className="size-4 text-neon shrink-0" />
-                <span className="text-sm text-slate-200 truncate flex-1 font-mono">
-                  {attachedTask.title}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-6 text-muted-foreground hover:text-red-400 shrink-0"
-                  onClick={() => setAttachedTaskId(null)}
-                >
-                  <Unlink className="size-3" />
-                </Button>
-              </div>
+        {/* Controls */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground hover:text-foreground"
+            onClick={resetTimer}
+          >
+            <RotateCcw className="size-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            className={`size-8 rounded-full ${
+              mode === 'focus'
+                ? 'bg-accent-brand hover:bg-accent-brand-dim text-white'
+                : 'bg-cyber-yellow hover:bg-yellow-500 text-white dark:text-background'
+            }`}
+            onClick={toggleTimer}
+          >
+            {isRunning ? (
+              <Pause className="size-3.5" />
             ) : (
-              <div className="flex items-center gap-2">
-                <Link2 className="size-4 text-muted-foreground shrink-0" />
-                <Select
-                  value={attachedTaskId || ''}
-                  onValueChange={(v) => setAttachedTaskId(v || null)}
-                >
-                  <SelectTrigger className="flex-1 h-8 text-xs bg-surface-alt border-border text-slate-300 placeholder:text-muted-foreground">
-                    <SelectValue placeholder="اربط مهمة بالتايمر..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border max-h-48">
-                    {tasks.length === 0 ? (
-                      <div className="p-2 text-xs text-muted-foreground text-center">
-                        مفيش مهام متاحة
-                      </div>
-                    ) : (
-                      tasks.slice(0, 15).map((task) => (
-                        <SelectItem
-                          key={task.id}
-                          value={task.id}
-                          className="text-slate-200 focus:bg-neon/10 focus:text-neon text-xs"
-                        >
-                          {task.title}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Play className="size-3.5 mr-[-1px]" />
             )}
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-border" />
+
+        {/* Task attachment */}
+        {attachedTask ? (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
+            <CheckCircle2 className="size-3.5 text-accent-brand shrink-0" />
+            <span className="text-xs text-foreground truncate max-w-[140px] font-medium">
+              {attachedTask.title}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-5 text-muted-foreground hover:text-destructive shrink-0 ml-0.5"
+              onClick={() => setAttachedTaskId(null)}
+            >
+              <Unlink className="size-3" />
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <Link2 className="size-3.5 text-muted-foreground shrink-0" />
+            <Select
+              value={attachedTaskId || ''}
+              onValueChange={(v) => setAttachedTaskId(v || null)}
+            >
+              <SelectTrigger className="h-7 text-xs border-0 bg-transparent text-muted-foreground hover:text-foreground p-0 w-[130px] shadow-none focus:ring-0">
+                <SelectValue placeholder="اربط مهمة..." />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border max-h-48">
+                {tasks.length === 0 ? (
+                  <div className="p-2 text-xs text-muted-foreground text-center">
+                    مفيش مهام
+                  </div>
+                ) : (
+                  tasks.slice(0, 15).map((task) => (
+                    <SelectItem
+                      key={task.id}
+                      value={task.id}
+                      className="text-foreground focus:bg-accent focus:text-accent-foreground text-xs"
+                    >
+                      {task.title}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
 
       {/* Focus Complete Dialog */}
       <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent className="sm:max-w-sm bg-card border-neon/30">
+        <DialogContent className="sm:max-w-sm bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-neon neon-glow-subtle flex items-center gap-2">
+            <DialogTitle className="text-accent-brand flex items-center gap-2">
               🎯 جلسة التركيز خلصت!
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -312,14 +251,14 @@ export default function PomodoroTimer() {
           </DialogHeader>
           {attachedTask && (
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-neon/5 border border-neon/20">
-                <Circle className="size-4 text-neon" />
-                <span className="text-sm text-slate-200 font-mono">{attachedTask.title}</span>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
+                <Circle className="size-4 text-accent-brand" />
+                <span className="text-sm text-foreground">{attachedTask.title}</span>
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1 border-border text-slate-300 hover:bg-surface-alt"
+                  className="flex-1"
                   onClick={() => {
                     setShowCompleteDialog(false);
                     switchMode('break');
@@ -328,7 +267,7 @@ export default function PomodoroTimer() {
                   لسه شغال
                 </Button>
                 <Button
-                  className="flex-1 bg-neon hover:bg-neon-dim text-background font-semibold"
+                  className="flex-1 bg-accent-brand hover:bg-accent-brand-dim text-white font-semibold"
                   onClick={markTaskDone}
                 >
                   <CheckCircle2 className="size-4 ml-1.5" />
@@ -339,7 +278,7 @@ export default function PomodoroTimer() {
           )}
           {!attachedTask && (
             <Button
-              className="w-full bg-cyber-yellow hover:bg-yellow-400 text-background font-semibold"
+              className="w-full bg-cyber-yellow hover:bg-yellow-500 text-white dark:text-background font-semibold"
               onClick={() => {
                 setShowCompleteDialog(false);
                 switchMode('break');

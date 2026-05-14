@@ -47,11 +47,61 @@
   --color-cyber-yellow: var(--cyber-yellow);
   --color-surface: var(--surface);
   --color-surface-alt: var(--surface-alt);
+  --color-accent-brand: var(--accent-brand);
+  --color-accent-brand-dim: var(--accent-brand-dim);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZEN LIGHT MODE — Calming off-white/cream palette (DEFAULT)
+   ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   --radius: 0.625rem;
-  /* === CYBERPUNK DARK THEME — DEFAULT === */
+  --background: #FDFCF8;
+  --foreground: #1e293b;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f0;
+  --secondary-foreground: #475569;
+  --muted: #f1f0eb;
+  --muted-foreground: #94a3b8;
+  --accent: #ecfdf5;
+  --accent-foreground: #0d9488;
+  --destructive: #ef4444;
+  --border: #e7e5e0;
+  --input: #f1f0eb;
+  --ring: #0d9488;
+  --chart-1: #0d9488;
+  --chart-2: #0284c7;
+  --chart-3: #d946ef;
+  --chart-4: #f59e0b;
+  --chart-5: #8b5cf6;
+  --sidebar: #f8f7f3;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #0d9488;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ecfdf5;
+  --sidebar-accent-foreground: #0d9488;
+  --sidebar-border: #e7e5e0;
+  --sidebar-ring: #0d9488;
+  /* Custom tokens — Light */
+  --neon: #0d9488;
+  --neon-dim: #0f766e;
+  --cyber-pink: #d946ef;
+  --cyber-yellow: #f59e0b;
+  --surface: #ffffff;
+  --surface-alt: #f5f5f0;
+  --accent-brand: #0d9488;
+  --accent-brand-dim: #0f766e;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CYBERPUNK DARK MODE — Neon green + hacker aesthetic
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark {
   --background: #0a0a0f;
   --foreground: #cbd5e1;
   --card: #0f0f1a;
@@ -75,7 +125,7 @@
   --chart-3: #ff00aa;
   --chart-4: #ffe600;
   --chart-5: #8b5cf6;
-  --sidebar: #0f0f1a;
+  --sidebar: #0d0d18;
   --sidebar-foreground: #e2e8f0;
   --sidebar-primary: #00ff88;
   --sidebar-primary-foreground: #0a0a0f;
@@ -83,13 +133,15 @@
   --sidebar-accent-foreground: #00ff88;
   --sidebar-border: #1e293b;
   --sidebar-ring: #00ff88;
-  /* Cyberpunk custom tokens */
+  /* Custom tokens — Dark */
   --neon: #00ff88;
   --neon-dim: #00cc6a;
   --cyber-pink: #ff00aa;
   --cyber-yellow: #ffe600;
   --surface: #0f0f1a;
   --surface-alt: #16162a;
+  --accent-brand: #00ff88;
+  --accent-brand-dim: #00cc6a;
 }
 
 @layer base {
@@ -101,20 +153,22 @@
   }
 }
 
-/* Neon glow utilities */
-.neon-glow {
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK-MODE-ONLY UTILITIES — glow / scanline
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark .neon-glow {
   text-shadow: 0 0 7px var(--neon), 0 0 10px var(--neon), 0 0 21px var(--neon);
 }
-.neon-glow-subtle {
+.dark .neon-glow-subtle {
   text-shadow: 0 0 5px var(--neon), 0 0 10px rgba(0, 255, 136, 0.3);
 }
-.neon-border-glow {
+.dark .neon-border-glow {
   box-shadow: 0 0 5px rgba(0, 255, 136, 0.3), inset 0 0 5px rgba(0, 255, 136, 0.1);
 }
-.cyber-pink-glow {
+.dark .cyber-pink-glow {
   text-shadow: 0 0 7px var(--cyber-pink), 0 0 10px var(--cyber-pink), 0 0 21px rgba(255, 0, 170, 0.3);
 }
-.cyber-scanline {
+.dark .cyber-scanline {
   background-image: repeating-linear-gradient(
     0deg,
     transparent,
@@ -124,10 +178,28 @@
   );
 }
 
-/* RTL Scrollbar styling — dark cyberpunk */
+/* Light mode — brand accent glow */
+.neon-glow-subtle {
+  color: var(--accent-brand);
+}
+.neon-border-glow {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-brand) 20%, transparent);
+}
+
+/* Accent brand glow — dark-mode-only drop-shadow for SVG/canvas elements */
+.accent-brand-glow {
+  filter: none;
+}
+.dark .accent-brand-glow {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent-brand) 50%, transparent));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR STYLING — theme-aware
+   ═══════════════════════════════════════════════════════════════════════════ */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1e293b transparent;
+  scrollbar-color: var(--border) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -140,10 +212,22 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--border);
   border-radius: 3px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--muted-foreground);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRANSITION — smooth theme switch
+   ═══════════════════════════════════════════════════════════════════════════ */
+html {
+  transition: color-scheme 0.3s ease;
+}
+
+body,
+body * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
 }
