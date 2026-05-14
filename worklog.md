@@ -92,3 +92,32 @@ Stage Summary:
 - AI persona upgraded to v2.0 — technical, developer-focused, terminal-style output
 - Technical task recognition: infrastructure=urgent, security=urgent, server=high, backend=high
 - Lint passes clean, all API endpoints return 200
+
+---
+Task ID: 5
+Agent: Main Orchestrator
+Task: UI Layout Restructure + Pomodoro Timer + AI Function Calling
+
+Work Log:
+- Restructured page.tsx: Sidebar + Main Canvas layout with collapsible ChatPanel (right side)
+- ChatPanel becomes a 380px collapsible sidebar with toggle button in header
+- Main Canvas shows PomodoroTimer + Tabbed view (Tasks/Heatmap)
+- Created PomodoroTimer.tsx: 25-min focus + 5-min break timer with circular progress
+- PomodoroTimer supports attaching a task, prompts to mark done on focus complete
+- PomodoroTimer updates browser title with countdown while running
+- Upgraded /api/chat/route.ts with OpenAI-style function calling (tools parameter)
+- Defined 4 tools: create_task, update_task, delete_task, mark_task_done
+- Implemented server-side tool execution engine that maps tool calls to Prisma ORM operations
+- Added hybrid fallback: if tools parameter not supported, uses prompt-based action extraction
+- ChatPanel updated: shows tool call indicators (wrench icon + OK/ERR badges) for executed tools
+- ChatPanel invalidates React Query cache (tasks, heatmap, weekly-score) when tools mutate data
+- Tested all 4 tools: create_task ✓, update_task ✓, mark_task_done ✓, delete_task ✓
+
+Stage Summary:
+- New layout: Sidebar + Main Canvas with collapsible AI chat panel
+- New component: PomodoroTimer with task attachment and completion prompts
+- AI function calling: 4 tools (create/update/delete/mark_done) working via OpenAI-compatible tools API
+- Hybrid fallback mechanism ensures tools work even if backend doesn't support tools parameter
+- Tool call indicators in ChatPanel show real-time feedback for AI actions
+- React Query cache invalidation ensures UI updates instantly after tool mutations
+- Lint passes clean, all endpoints returning 200
