@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,14 +16,74 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  tasks     Task[]
+  dayLogs   DayLog[]
+  emailSuggestions EmailSuggestion[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Task {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  notes       String   @default("")
+  category    String   @default("work")   // work | personal | errands | calls | reading
+  priority    String   @default("medium") // urgent | high | medium | low
+  status      String   @default("pending") // pending | done | cancelled
+  dueDatetime DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Recurrence
+  isRecurring    Boolean  @default(false)
+  recurrenceRule String   @default("")
+
+  // Source tracking
+  source       String @default("manual") // manual | email | ai
+  sourceEmailId String @default("")
+
+  // AI priority score (computed, cached)
+  aiScore Float @default(0)
+
+  dayLogs DayLogTask[]
+}
+
+model DayLog {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date             String   // YYYY-MM-DD format
+  summary          String   @default("")
+  totalTasks       Int      @default(0)
+  completedTasks   Int      @default(0)
+  productivityScore Float   @default(0)
+
+  tasks DayLogTask[]
+
+  @@unique([userId, date])
+}
+
+model DayLogTask {
+  id       String @id @default(cuid())
+  dayLogId String
+  dayLog   DayLog @relation(fields: [dayLogId], references: [id], onDelete: Cascade)
+  taskId   String
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([dayLogId, taskId])
+}
+
+model EmailSuggestion {
+  id               String  @id @default(cuid())
+  userId           String
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailId          String  @unique
+  sender           String
+  subject          String
+  actionDetected   String
+  suggestedTitle   String
+  suggestedPriority String @default("medium")
+  confirmed        Boolean? // null=pending, true=accepted, false=rejected
+  createdAt        DateTime @default(now())
 }
