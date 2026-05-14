@@ -84,7 +84,7 @@ export default function IntegrationsPanel() {
               </span>
             </div>
             {isConnected && (
-              <Badge className="bg-accent-brand/10 text-accent-brand text-[9px] px-1.5 py-0 h-4 border-0 font-mono">
+              <Badge className="bg-accent-brand/15 text-accent-brand text-[9px] px-1.5 py-0 h-4 border-0 font-mono">
                 ACTIVE
               </Badge>
             )}
@@ -132,13 +132,13 @@ export default function IntegrationsPanel() {
                     {/* Scopes info */}
                     <div className="flex flex-wrap gap-1">
                       {status.scopes.includes('gmail.readonly') && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-accent-brand/20 text-accent-brand">
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-accent-brand/30 text-accent-brand">
                           <Mail className="size-2.5 ml-0.5" />
                           Gmail
                         </Badge>
                       )}
                       {status.scopes.includes('calendar.events.readonly') && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-accent-brand/20 text-accent-brand">
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-accent-brand/30 text-accent-brand">
                           <Calendar className="size-2.5 ml-0.5" />
                           Calendar
                         </Badge>
@@ -179,11 +179,13 @@ export default function IntegrationsPanel() {
 
                     {/* Test results */}
                     {gmailTestMutation.data && (
-                      <div className={`text-[10px] font-mono px-2 py-1.5 rounded-md border ${
-                        gmailTestMutation.data.success
-                          ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
-                          : 'bg-destructive/5 border-destructive/20 text-destructive'
-                      }`}>
+                      <div
+                        className={
+                          gmailTestMutation.data.success
+                            ? 'text-[10px] font-mono px-2 py-1.5 rounded-md border bg-accent-brand/8 border-accent-brand/30 text-accent-brand'
+                            : 'text-[10px] font-mono px-2 py-1.5 rounded-md border bg-destructive/8 border-destructive/30 text-destructive'
+                        }
+                      >
                         {gmailTestMutation.data.success ? (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="size-3" />
@@ -198,11 +200,13 @@ export default function IntegrationsPanel() {
                       </div>
                     )}
                     {calendarTestMutation.data && (
-                      <div className={`text-[10px] font-mono px-2 py-1.5 rounded-md border ${
-                        calendarTestMutation.data.success
-                          ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
-                          : 'bg-destructive/5 border-destructive/20 text-destructive'
-                      }`}>
+                      <div
+                        className={
+                          calendarTestMutation.data.success
+                            ? 'text-[10px] font-mono px-2 py-1.5 rounded-md border bg-accent-brand/8 border-accent-brand/30 text-accent-brand'
+                            : 'text-[10px] font-mono px-2 py-1.5 rounded-md border bg-destructive/8 border-destructive/30 text-destructive'
+                        }
+                      >
                         {calendarTestMutation.data.success ? (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="size-3" />

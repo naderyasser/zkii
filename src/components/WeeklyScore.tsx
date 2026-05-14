@@ -26,7 +26,7 @@ export default function WeeklyScore() {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <Card className="border-accent-brand/20 bg-card/60 backdrop-blur-sm">
+    <Card className="border-accent-brand/30 bg-card/60 backdrop-blur-sm">
       <CardContent className="p-4 flex items-center gap-4">
         <div className="relative w-20 h-20 shrink-0">
           <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
@@ -37,7 +37,7 @@ export default function WeeklyScore() {
               fill="none"
               stroke="currentColor"
               strokeWidth="6"
-              className="text-accent-brand/10"
+              className="text-accent-brand/20"
             />
             <circle
               cx="40"

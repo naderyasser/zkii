@@ -115,14 +115,14 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
                 </span>
                 <span className="text-[10px] text-muted-foreground">إجمالي المهام</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-accent-brand/5 border border-accent-brand/25">
                 <span className="text-2xl font-bold text-accent-brand font-mono">
                   {dayDetail.completedTasks}
                 </span>
                 <span className="text-[10px] text-muted-foreground">مكتملة</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-cyber-pink/5 border border-cyber-pink/20">
-                <span className="text-2xl font-bold text-cyber-pink font-mono">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-cyber-pink/5 border border-cyber-pink/30">
+                <span className="text-2xl font-bold text-fuchsia-700 dark:text-cyber-pink font-mono">
                   {Math.round(dayDetail.productivityScore)}%
                 </span>
                 <span className="text-[10px] text-muted-foreground">الإنتاجية</span>
@@ -136,7 +136,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
 
             {/* AI Summary */}
             {dayDetail.summary ? (
-              <div className="p-4 rounded-lg bg-accent-brand/5 border border-accent-brand/20">
+              <div className="p-4 rounded-lg bg-accent-brand/5 border border-accent-brand/25">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Sparkles className="size-4 text-accent-brand" />
                   <span className="text-sm font-semibold text-accent-brand">
@@ -150,7 +150,7 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
             ) : (
               <Button
                 variant="outline"
-                className="w-full border-accent-brand/30 text-accent-brand hover:bg-accent-brand/10 gap-1.5"
+                className="w-full border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 gap-1.5"
                 onClick={() => {
                   if (date) generateSummaryMutation.mutate(date);
                 }}

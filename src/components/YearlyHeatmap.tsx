@@ -31,11 +31,11 @@ const arabicDayAbbr = ['س', 'ر', 'خ', 'ج', 'ن', 'ث', ''];
 
 // Theme-aware heatmap levels — teal in light, neon green in dark
 const levelColors: Record<number, string> = {
-  0: 'bg-border/40',
-  1: 'bg-accent-brand/10',
-  2: 'bg-accent-brand/25',
-  3: 'bg-accent-brand/50',
-  4: 'bg-accent-brand/80',
+  0: 'bg-border/50',
+  1: 'bg-accent-brand/15',
+  2: 'bg-accent-brand/30',
+  3: 'bg-accent-brand/55',
+  4: 'bg-accent-brand/85',
 };
 
 export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {

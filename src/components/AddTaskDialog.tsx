@@ -192,7 +192,7 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
 
           <Button
             type="submit"
-            className="bg-accent-brand hover:bg-accent-brand-dim text-background font-semibold"
+            className="bg-accent-brand hover:bg-accent-brand-dim text-white font-semibold"
             disabled={!title.trim() || createMutation.isPending}
           >
             {createMutation.isPending ? (

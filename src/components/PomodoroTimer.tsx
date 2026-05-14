@@ -132,7 +132,7 @@ export default function PomodoroTimer() {
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
             mode === 'focus'
               ? 'bg-accent-brand/10 text-accent-brand'
-              : 'bg-cyber-yellow/10 text-cyber-yellow dark:text-cyber-yellow'
+              : 'bg-amber-100 text-amber-700 dark:bg-cyber-yellow/10 dark:text-cyber-yellow'
           }`}
         >
           {mode === 'focus' ? <Timer className="size-3" /> : <Coffee className="size-3" />}
@@ -142,7 +142,7 @@ export default function PomodoroTimer() {
         {/* Timer display */}
         <div className="flex items-center gap-2">
           <span className={`text-2xl font-bold font-mono tabular-nums ${
-            mode === 'focus' ? 'text-accent-brand' : 'text-cyber-yellow'
+            mode === 'focus' ? 'text-accent-brand' : 'text-amber-700 dark:text-cyber-yellow'
           }`}>
             {formatTime(timeLeft)}
           </span>
@@ -151,7 +151,7 @@ export default function PomodoroTimer() {
           <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-1000 ${
-                mode === 'focus' ? 'bg-accent-brand' : 'bg-cyber-yellow'
+                mode === 'focus' ? 'bg-accent-brand' : 'bg-amber-500 dark:bg-cyber-yellow'
               }`}
               style={{ width: `${progress}%` }}
             />
@@ -173,7 +173,7 @@ export default function PomodoroTimer() {
             className={`size-8 rounded-full ${
               mode === 'focus'
                 ? 'bg-accent-brand hover:bg-accent-brand-dim text-white'
-                : 'bg-cyber-yellow hover:bg-yellow-500 text-white dark:text-background'
+                : 'bg-amber-500 hover:bg-amber-600 text-white dark:bg-cyber-yellow dark:hover:bg-yellow-500 dark:text-background'
             }`}
             onClick={toggleTimer}
           >
@@ -278,7 +278,7 @@ export default function PomodoroTimer() {
           )}
           {!attachedTask && (
             <Button
-              className="w-full bg-cyber-yellow hover:bg-yellow-500 text-white dark:text-background font-semibold"
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white dark:bg-cyber-yellow dark:hover:bg-yellow-500 dark:text-background font-semibold"
               onClick={() => {
                 setShowCompleteDialog(false);
                 switchMode('break');

@@ -296,3 +296,47 @@ Stage Summary:
 - Graceful error handling: GOOGLE_NOT_CONNECTED → user guidance, TOKEN_EXPIRED → re-auth prompt
 - ChatPanel shows specialized icons for Gmail/Calendar tool calls
 - Agent loop increased to 4 rounds for multi-tool Daily Brief scenarios
+
+---
+Task ID: 10
+Agent: Main Orchestrator
+Task: Fix Light Mode (Zen Mode) Contrast — CSS Variables + Component Audit
+
+Work Log:
+- Fixed globals.css `:root` (light mode) CSS variables for dramatically better contrast:
+  - `--foreground`: #1e293b → #0f172a (slate-900, near-black for max readability)
+  - `--card-foreground`: #1e293b → #0f172a
+  - `--popover-foreground`: #1e293b → #0f172a
+  - `--muted-foreground`: #94a3b8 → #475569 (slate-400→slate-600, CRITICAL FIX — was nearly invisible on white)
+  - `--accent-brand`: #0d9488 → #0f766e (teal-500→teal-700, deeper for better contrast on white)
+  - `--accent-brand-dim`: #0f766e → #115e59 (teal-700→teal-800)
+  - `--primary`: #0d9488 → #0f766e (in sync with accent-brand)
+  - `--border`: #e7e5e0 → #cbd5e1 (slate-300, clearly visible card/input borders)
+  - `--input`: #f1f0eb → #e2e8f0 (slate-200, visible input borders)
+  - `--ring`: #0d9488 → #0f766e
+  - `--neon`: #0d9488 → #0f766e
+  - `--neon-dim`: #0f766e → #115e59
+  - `--cyber-yellow`: #f59e0b → #d97706 (amber-500→amber-700, more readable on white)
+  - `--surface-alt`: #f5f5f0 → #f1f5f9 (slate-100, consistent with new border colors)
+  - `--secondary`: #f5f5f0 → #f1f5f9
+  - `--muted`: #f1f0eb → #f1f5f9
+  - All sidebar variables updated to match new deeper values
+  - All chart colors updated to match
+- ChatPanel.tsx: Removed text-accent-brand/80 (was reducing contrast), changed to text-accent-brand. Bumped border opacities from /15,/20 to /25,/30 for visibility. Fixed OK/ERR badge backgrounds from /10 to /15.
+- TaskList.tsx: Bumped category badge border opacities from /20 to /30. Fixed pressure colors: urgent now uses text-amber-700 (dark mode: cyber-yellow), overdue uses text-red-600 (dark: red-400). Added text-foreground + font-semibold to tab triggers for legibility.
+- PomodoroTimer.tsx: Break mode now uses amber-100/amber-700 in light mode (dark: cyber-yellow). Timer digits: amber-700 light (dark: cyber-yellow). Progress bar: amber-500 light (dark: cyber-yellow). Play button: amber-500 light (dark: cyber-yellow). Break dialog button: amber-500 light.
+- IntegrationsPanel.tsx: Bumped border opacities from /20 to /30. Badge backgrounds from /10 to /15. Refactored test result divs from template literals to className prop (fixed ESLint parsing error).
+- WeeklyScore.tsx: Card border from /20 to /30. SVG ring track from /10 to /20.
+- YearlyHeatmap.tsx: Heatmap level colors bumped: 0: /40→/50, 1: /10→/15, 2: /25→/30, 3: /50→/55, 4: /80→/85.
+- DayDetailModal.tsx: Bumped border opacities. Productivity % now uses text-fuchsia-700 in light mode (dark: cyber-pink). Analyze button border from /30 to /40.
+- AddTaskDialog.tsx: Submit button text-background → text-white (more reliable on teal bg).
+- Verified `.dark` CSS variables completely untouched — all cyberpunk values preserved.
+- Lint passes clean, dev server running.
+
+Stage Summary:
+- Light mode contrast dramatically improved: deep slate text, proper muted-foreground, stronger teal accent, visible borders
+- The #1 critical fix: muted-foreground went from #94a3b8 (invisible on white) to #475569 (clearly readable)
+- Accent brand deepened from teal-500 to teal-700 for crisp contrast against white cards
+- Border color darkened from warm-gray to slate-300 for clear card/input definition
+- All "yellow" accents now use amber-700/amber-500 in light mode (cyber-yellow reserved for dark mode)
+- Zero changes to dark mode — cyberpunk aesthetic preserved exactly

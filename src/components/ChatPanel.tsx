@@ -205,7 +205,7 @@ export default function ChatPanel() {
                       key={s}
                       variant="outline"
                       size="sm"
-                      className="text-xs border-accent-brand/20 text-accent-brand/80 hover:bg-accent-brand/5 hover:text-accent-brand justify-start h-8"
+                      className="text-xs border-accent-brand/30 text-accent-brand hover:bg-accent-brand/5 hover:text-accent-brand justify-start h-8"
                       onClick={() => handleSuggestion(s)}
                       disabled={chatMutation.isPending}
                     >
@@ -246,7 +246,7 @@ export default function ChatPanel() {
                           <Bot className="size-3.5 text-accent-brand" />
                         </div>
                         <div className="max-w-[85%] flex flex-col gap-1.5">
-                          <div className="rounded-xl px-3 py-2 text-sm leading-relaxed bg-accent-brand/5 text-foreground border border-accent-brand/15">
+                          <div className="rounded-xl px-3 py-2 text-sm leading-relaxed bg-accent-brand/5 text-foreground border border-accent-brand/25">
                             <span className="font-mono whitespace-pre-wrap">{msg.content}</span>
                           </div>
                           {/* Tool call indicators */}
@@ -257,8 +257,8 @@ export default function ChatPanel() {
                                   key={tcIdx}
                                   className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono border ${
                                     tc.status === 'success'
-                                      ? 'bg-accent-brand/5 border-accent-brand/20 text-accent-brand'
-                                      : 'bg-destructive/5 border-destructive/20 text-destructive'
+                                      ? 'bg-accent-brand/8 border-accent-brand/30 text-accent-brand'
+                                      : 'bg-destructive/8 border-destructive/30 text-destructive'
                                   }`}
                                 >
                                   {tc.tool === 'scan_gmail_inbox' ? (
@@ -272,9 +272,9 @@ export default function ChatPanel() {
                                   <span className="text-muted-foreground">→</span>
                                   <span className="truncate">{tc.message}</span>
                                   {tc.status === 'success' ? (
-                                    <Badge className="bg-accent-brand/10 text-accent-brand text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">OK</Badge>
+                                    <Badge className="bg-accent-brand/15 text-accent-brand text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">OK</Badge>
                                   ) : (
-                                    <Badge className="bg-destructive/10 text-destructive text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">ERR</Badge>
+                                    <Badge className="bg-destructive/15 text-destructive text-[8px] px-1 py-0 h-3.5 border-0 shrink-0">ERR</Badge>
                                   )}
                                 </div>
                               ))}

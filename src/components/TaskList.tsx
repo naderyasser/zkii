@@ -43,11 +43,11 @@ const categoryLabels: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  work: 'bg-accent-brand/10 text-accent-brand border-accent-brand/20',
-  personal: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
-  errands: 'bg-cyber-yellow/10 text-cyber-yellow border-cyber-yellow/20',
-  calls: 'bg-cyber-pink/10 text-cyber-pink border-cyber-pink/20',
-  reading: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',
+  work: 'bg-accent-brand/10 text-accent-brand border-accent-brand/30',
+  personal: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30',
+  errands: 'bg-cyber-yellow/10 text-cyber-yellow border-cyber-yellow/30',
+  calls: 'bg-cyber-pink/10 text-cyber-pink border-cyber-pink/30',
+  reading: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30',
 };
 
 const priorityLabels: Record<string, string> = {
@@ -67,8 +67,8 @@ const priorityIcons: Record<string, string> = {
 const pressureColors: Record<string, string> = {
   chill: 'bg-accent-brand/10 text-accent-brand',
   normal: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-  urgent: 'bg-cyber-yellow/10 text-cyber-yellow',
-  overdue: 'bg-red-500/10 text-red-500 dark:text-red-400',
+  urgent: 'bg-cyber-yellow/10 text-amber-700 dark:text-cyber-yellow',
+  overdue: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
 const pressureLabels: Record<string, string> = {
@@ -229,10 +229,10 @@ export default function TaskList() {
           </div>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-4 h-9 bg-surface-alt border border-border">
-              <TabsTrigger value="all" className="text-xs data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm">{`// الكل`}</TabsTrigger>
-              <TabsTrigger value="today" className="text-xs data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm">النهارده</TabsTrigger>
-              <TabsTrigger value="overdue" className="text-xs data-[state=active]:bg-card data-[state=active]:text-red-500 data-[state=active]:shadow-sm">المتأخرة</TabsTrigger>
-              <TabsTrigger value="done" className="text-xs data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm">المكتملة</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs text-foreground data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm data-[state=active]:font-semibold">{`// الكل`}</TabsTrigger>
+              <TabsTrigger value="today" className="text-xs text-foreground data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm data-[state=active]:font-semibold">النهارده</TabsTrigger>
+              <TabsTrigger value="overdue" className="text-xs text-foreground data-[state=active]:bg-card data-[state=active]:text-red-600 data-[state=active]:shadow-sm data-[state=active]:font-semibold">المتأخرة</TabsTrigger>
+              <TabsTrigger value="done" className="text-xs text-foreground data-[state=active]:bg-card data-[state=active]:text-accent-brand data-[state=active]:shadow-sm data-[state=active]:font-semibold">المكتملة</TabsTrigger>
             </TabsList>
             <TabsContent value={activeTab} className="mt-3">
               {isLoading ? (
