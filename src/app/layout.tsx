@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo, JetBrains_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Cairo, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/components/QueryProvider";
@@ -9,6 +8,12 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -31,19 +36,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`${cairo.variable} ${jetbrainsMono.variable} font-[family-name:var(--font-cairo)] antialiased bg-background text-foreground`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
-          <QueryProvider>
-            {children}
-          </QueryProvider>
-          <Toaster />
-        </ThemeProvider>
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+      <body
+        className={`${cairo.variable} ${inter.variable} ${jetbrainsMono.variable} font-[family-name:var(--font-cairo)] antialiased bg-background text-foreground`}
+      >
+        <QueryProvider>
+          {children}
+        </QueryProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,171 +1,144 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Terminal, PanelRightOpen, PanelRightClose, Activity, ListTodo } from 'lucide-react';
-import WeeklyScore from '@/components/WeeklyScore';
-import TaskList from '@/components/TaskList';
-import YearlyHeatmap from '@/components/YearlyHeatmap';
-import ChatPanel from '@/components/ChatPanel';
-import PomodoroTimer from '@/components/PomodoroTimer';
-import DayDetailModal from '@/components/DayDetailModal';
-import IntegrationsPanel from '@/components/IntegrationsPanel';
-import ThemeToggle from '@/components/ThemeToggle';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Terminal, Activity } from 'lucide-react';
+import { useUIStore } from '@/store/ui';
+import { useChat } from '@/hooks/useChat';
+import * as api from '@/lib/api';
+import type { Task } from '@/types';
+
+import ChatPanel from '@/components/chat/ChatPanel';
+import TaskList from '@/components/tasks/TaskList';
+import EmptyState from '@/components/ui-koala/EmptyState';
+import YearlyHeatmap from '@/components/heatmap/YearlyHeatmap';
+import DayDetailPanel from '@/components/heatmap/DayDetailPanel';
+import AccountSwitcher from '@/components/account/AccountSwitcher';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useCreateTask } from '@/hooks/useTasks';
 
 type MainTab = 'tasks' | 'heatmap';
 
 export default function Home() {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [dayDetailOpen, setDayDetailOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
   const [mainTab, setMainTab] = useState<MainTab>('tasks');
-  const { toast } = useToast();
+  const chatOpen = useUIStore((s) => s.chatOpen);
+  const toggleChat = useUIStore((s) => s.toggleChat);
+  const dayDetailDate = useUIStore((s) => s.dayDetailDate);
+  const dayDetailOpen = useUIStore((s) => s.dayDetailOpen);
+  const openDayDetail = useUIStore((s) => s.openDayDetail);
+  const closeDayDetail = useUIStore((s) => s.closeDayDetail);
+  const heatmapExpanded = useUIStore((s) => s.heatmapExpanded);
+  const toggleHeatmap = useUIStore((s) => s.toggleHeatmap);
 
-  // ─── Handle OAuth callback redirects ──────────────────────────────────────
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthSuccess = params.get('oauth_success');
-    const oauthError = params.get('oauth_error');
+  const createTask = useCreateTask();
 
-    if (oauthSuccess === 'google') {
-      toast({
-        title: 'تم ربط Google ✓',
-        description: 'حساب Google متصل بنجاح — تقدر تستخدم Gmail و Calendar دلوقتي',
-        variant: 'default',
-      });
-      // Clean up URL
-      window.history.replaceState({}, '', '/');
-    }
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
+    queryKey: ['tasks', 'all'],
+    queryFn: () => api.getTasks('all', 'priority'),
+  });
 
-    if (oauthError) {
-      const errorMessages: Record<string, string> = {
-        access_denied: 'تم رفض الوصول — محتاج تسمح بالأذونات',
-        no_code: 'لم يتم استلام كود التفويض',
-        missing_tokens: 'لم يتم استلام التوكنز من Google',
-        token_exchange_failed: 'فشل تبادل الكود — حاول تاني',
-      };
-      toast({
-        title: 'فشل ربط Google',
-        description: errorMessages[oauthError] || `خطأ: ${oauthError}`,
-        variant: 'destructive',
-      });
-      // Clean up URL
-      window.history.replaceState({}, '', '/');
-    }
-  }, [toast]);
+  const hasTasks = tasks.length > 0;
 
-  function handleDayClick(date: string) {
-    setSelectedDate(date);
-    setDayDetailOpen(true);
+  const { data: oauthStatus } = useQuery({
+    queryKey: ['oauth-status'],
+    queryFn: api.getOAuthStatus,
+    refetchInterval: 30000,
+  });
+
+  function handleSuggestionClick(text: string) {
+    // Will be wired to chat
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background dark:cyber-scanline">
-      {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-accent-brand/10 border border-accent-brand/20 flex items-center justify-center dark:neon-border-glow">
-              <Terminal className="size-4 text-accent-brand" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-accent-brand dark:neon-glow-subtle tracking-wide">زكي</h1>
-              <p className="text-[10px] text-muted-foreground font-mono -mt-0.5">v3.0 // مساعدك التقني الذكي + Google</p>
-            </div>
-          </div>
+  function handleAddTask(title: string) {
+    createTask.mutate({ title });
+  }
 
-          <div className="flex items-center gap-2">
-            <WeeklyScore />
-            <ThemeToggle />
+  // ── State 1: Empty / First Visit ──────────────────────────────
+  if (!tasksLoading && !hasTasks) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base">
+        <EmptyState
+          onSuggestionClick={handleSuggestionClick}
+          onAddTask={handleAddTask}
+        />
+      </div>
+    );
+  }
+
+  // ── State 2: Has Tasks (Main Dashboard) ───────────────────────
+  return (
+    <div className="min-h-screen flex flex-col bg-base">
+      {/* Header */}
+      <header className="h-12 flex items-center justify-between px-4 border-b border-border-subtle shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="size-6 rounded-md bg-koala-purple/20 flex items-center justify-center">
+            <Terminal className="size-3.5 text-koala-purple" />
+          </div>
+          <span className="text-[15px] font-semibold text-koala-bright font-[family-name:var(--font-cairo)]">
+            زكي
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Tab switcher */}
+          <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-surface border border-border-subtle">
             <Button
               variant="ghost"
-              size="icon"
-              className="size-9 text-muted-foreground hover:text-accent-brand hover:bg-accent-brand/10 border border-border"
-              onClick={() => setChatOpen((prev) => !prev)}
-              title={chatOpen ? 'إخفاء الشات' : 'إظهار الشات'}
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'tasks'
+                  ? 'bg-hover text-accent-blue'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('tasks')}
             >
-              {chatOpen ? (
-                <PanelRightClose className="size-4" />
-              ) : (
-                <PanelRightOpen className="size-4" />
-              )}
+              المهام
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'heatmap'
+                  ? 'bg-hover text-accent-blue'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('heatmap')}
+            >
+              <Activity className="size-3 me-1" />
+              النشاط
             </Button>
           </div>
+
+          <AccountSwitcher />
         </div>
       </header>
 
-      {/* Main Content: Canvas + Sidebar */}
+      {/* Main: Sidebar + Canvas */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Chat Sidebar */}
+        {chatOpen && (
+          <aside className="w-[240px] min-w-[240px] border-e border-border-subtle bg-surface">
+            <ChatPanel />
+          </aside>
+        )}
+
         {/* Main Canvas */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
-          <div className="max-w-3xl mx-auto flex flex-col gap-5">
-            {/* Pomodoro Pill Widget */}
-            <PomodoroTimer />
-
-            {/* Tab switcher + Integrations */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-alt border border-border w-fit">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`text-xs h-7 px-3 rounded-md transition-all ${
-                    mainTab === 'tasks'
-                      ? 'bg-card text-accent-brand shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setMainTab('tasks')}
-                >
-                  <ListTodo className="size-3.5 ml-1.5" />
-                  المهام
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`text-xs h-7 px-3 rounded-md transition-all ${
-                    mainTab === 'heatmap'
-                      ? 'bg-card text-accent-brand shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setMainTab('heatmap')}
-                >
-                  <Activity className="size-3.5 ml-1.5" />
-                  خريطة النشاط
-                </Button>
-              </div>
-
-              {/* Google Integration mini-widget */}
-              <div className="flex-1 min-w-[200px] max-w-[320px]">
-                <IntegrationsPanel />
-              </div>
-            </div>
-
-            {/* Main content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-2xl mx-auto flex flex-col gap-6">
             {mainTab === 'tasks' ? (
               <TaskList />
             ) : (
-              <YearlyHeatmap onDayClick={handleDayClick} />
+              <YearlyHeatmap onDayClick={openDayDetail} />
             )}
           </div>
         </main>
-
-        {/* Chat Sidebar — slightly different shade for depth */}
-        <aside
-          className={`border-r border-border bg-sidebar transition-all duration-300 ease-in-out overflow-hidden ${
-            chatOpen ? 'w-[380px] min-w-[340px]' : 'w-0 min-w-0'
-          }`}
-        >
-          <div className="w-[380px] h-full">
-            <ChatPanel />
-          </div>
-        </aside>
       </div>
 
-      {/* Day Detail Modal */}
-      <DayDetailModal
-        date={selectedDate}
+      {/* Day Detail Panel */}
+      <DayDetailPanel
+        date={dayDetailDate}
         open={dayDetailOpen}
-        onOpenChange={setDayDetailOpen}
+        onClose={closeDayDetail}
       />
     </div>
   );

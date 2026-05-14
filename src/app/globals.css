@@ -3,10 +3,78 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   KOALA — Neovim-inspired dark palette (DARK ONLY)
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --radius: 0.375rem;
+
+  /* Backgrounds */
+  --bg-base: #1a1a2e;
+  --bg-surface: #16213e;
+  --bg-elevated: #0f3460;
+  --bg-hover: #1e2a4a;
+
+  /* Text */
+  --text-primary: #a9b1d6;
+  --text-secondary: #565f89;
+  --text-muted: #3b4261;
+  --text-bright: #c0caf5;
+
+  /* Accent colors */
+  --accent-coral: #e94560;
+  --accent-blue: #7aa2f7;
+  --accent-purple: #bb9af7;
+  --accent-teal: #73daca;
+  --accent-yellow: #e0af68;
+  --accent-orange: #ff9e64;
+  --accent-green: #9ece6a;
+
+  /* Borders */
+  --border-subtle: #292e42;
+  --border-default: #3b4261;
+  --border-strong: #565f89;
+
+  /* shadcn/ui semantic mapping */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-elevated);
+  --popover-foreground: var(--text-bright);
+  --primary: var(--accent-blue);
+  --primary-foreground: var(--bg-base);
+  --secondary: var(--bg-hover);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-hover);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--bg-hover);
+  --accent-foreground: var(--text-bright);
+  --destructive: var(--accent-coral);
+  --destructive-foreground: #ffffff;
+  --border: var(--border-subtle);
+  --input: var(--border-default);
+  --ring: var(--accent-blue);
+  --chart-1: var(--accent-blue);
+  --chart-2: var(--accent-teal);
+  --chart-3: var(--accent-purple);
+  --chart-4: var(--accent-yellow);
+  --chart-5: var(--accent-green);
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-blue);
+  --sidebar-primary-foreground: var(--bg-base);
+  --sidebar-accent: var(--bg-hover);
+  --sidebar-accent-foreground: var(--text-bright);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--accent-blue);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-cairo);
+  --font-sans: var(--font-inter);
+  --font-arabic: var(--font-cairo);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -37,111 +105,30 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-neon: var(--neon);
-  --color-neon-dim: var(--neon-dim);
-  --color-cyber-pink: var(--cyber-pink);
-  --color-cyber-yellow: var(--cyber-yellow);
-  --color-surface: var(--surface);
-  --color-surface-alt: var(--surface-alt);
-  --color-accent-brand: var(--accent-brand);
-  --color-accent-brand-dim: var(--accent-brand-dim);
-}
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZEN LIGHT MODE — Calming off-white/cream palette (DEFAULT)
-   ═══════════════════════════════════════════════════════════════════════════ */
-:root {
-  --radius: 0.625rem;
-  --background: #FDFCF8;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f766e;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #475569;
-  --muted: #f1f5f9;
-  --muted-foreground: #475569;
-  --accent: #ecfdf5;
-  --accent-foreground: #0f766e;
-  --destructive: #ef4444;
-  --border: #cbd5e1;
-  --input: #e2e8f0;
-  --ring: #0f766e;
-  --chart-1: #0f766e;
-  --chart-2: #0284c7;
-  --chart-3: #d946ef;
-  --chart-4: #f59e0b;
-  --chart-5: #8b5cf6;
-  --sidebar: #f8f7f3;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0f766e;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ecfdf5;
-  --sidebar-accent-foreground: #0f766e;
-  --sidebar-border: #cbd5e1;
-  --sidebar-ring: #0f766e;
-  /* Custom tokens — Light */
-  --neon: #0f766e;
-  --neon-dim: #115e59;
-  --cyber-pink: #d946ef;
-  --cyber-yellow: #d97706;
-  --surface: #ffffff;
-  --surface-alt: #f1f5f9;
-  --accent-brand: #0f766e;
-  --accent-brand-dim: #115e59;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CYBERPUNK DARK MODE — Neon green + hacker aesthetic
-   ═══════════════════════════════════════════════════════════════════════════ */
-.dark {
-  --background: #0a0a0f;
-  --foreground: #cbd5e1;
-  --card: #0f0f1a;
-  --card-foreground: #e2e8f0;
-  --popover: #111127;
-  --popover-foreground: #e2e8f0;
-  --primary: #00ff88;
-  --primary-foreground: #0a0a0f;
-  --secondary: #1a1a2e;
-  --secondary-foreground: #94a3b8;
-  --muted: #16162a;
-  --muted-foreground: #64748b;
-  --accent: #1e1e3a;
-  --accent-foreground: #00ff88;
-  --destructive: #ff0055;
-  --border: #1e293b;
-  --input: #1a1a2e;
-  --ring: #00ff88;
-  --chart-1: #00ff88;
-  --chart-2: #00d4ff;
-  --chart-3: #ff00aa;
-  --chart-4: #ffe600;
-  --chart-5: #8b5cf6;
-  --sidebar: #0d0d18;
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #00ff88;
-  --sidebar-primary-foreground: #0a0a0f;
-  --sidebar-accent: #1a1a2e;
-  --sidebar-accent-foreground: #00ff88;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #00ff88;
-  /* Custom tokens — Dark */
-  --neon: #00ff88;
-  --neon-dim: #00cc6a;
-  --cyber-pink: #ff00aa;
-  --cyber-yellow: #ffe600;
-  --surface: #0f0f1a;
-  --surface-alt: #16162a;
-  --accent-brand: #00ff88;
-  --accent-brand-dim: #00cc6a;
+  /* Koala custom tokens */
+  --color-base: var(--bg-base);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-hover: var(--bg-hover);
+  --color-koala-primary: var(--text-primary);
+  --color-koala-secondary: var(--text-secondary);
+  --color-koala-muted: var(--text-muted);
+  --color-koala-bright: var(--text-bright);
+  --color-coral: var(--accent-coral);
+  --color-accent-blue: var(--accent-blue);
+  --color-koala-purple: var(--accent-purple);
+  --color-koala-teal: var(--accent-teal);
+  --color-koala-yellow: var(--accent-yellow);
+  --color-koala-orange: var(--accent-orange);
+  --color-koala-green: var(--accent-green);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
 }
 
 @layer base {
@@ -154,57 +141,16 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DARK-MODE-ONLY UTILITIES — glow / scanline
-   ═══════════════════════════════════════════════════════════════════════════ */
-.dark .neon-glow {
-  text-shadow: 0 0 7px var(--neon), 0 0 10px var(--neon), 0 0 21px var(--neon);
-}
-.dark .neon-glow-subtle {
-  text-shadow: 0 0 5px var(--neon), 0 0 10px rgba(0, 255, 136, 0.3);
-}
-.dark .neon-border-glow {
-  box-shadow: 0 0 5px rgba(0, 255, 136, 0.3), inset 0 0 5px rgba(0, 255, 136, 0.1);
-}
-.dark .cyber-pink-glow {
-  text-shadow: 0 0 7px var(--cyber-pink), 0 0 10px var(--cyber-pink), 0 0 21px rgba(255, 0, 170, 0.3);
-}
-.dark .cyber-scanline {
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 255, 136, 0.015) 2px,
-    rgba(0, 255, 136, 0.015) 4px
-  );
-}
-
-/* Light mode — brand accent glow */
-.neon-glow-subtle {
-  color: var(--accent-brand);
-}
-.neon-border-glow {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-brand) 20%, transparent);
-}
-
-/* Accent brand glow — dark-mode-only drop-shadow for SVG/canvas elements */
-.accent-brand-glow {
-  filter: none;
-}
-.dark .accent-brand-glow {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent-brand) 50%, transparent));
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SCROLLBAR STYLING — theme-aware
+   SCROLLBAR STYLING
    ═══════════════════════════════════════════════════════════════════════════ */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--border-subtle) transparent;
 }
 
 *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 *::-webkit-scrollbar-track {
@@ -212,22 +158,49 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-subtle);
   border-radius: 3px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+  background: var(--border-default);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TRANSITION — smooth theme switch
+   ANIMATIONS — minimal, precise
    ═══════════════════════════════════════════════════════════════════════════ */
-html {
-  transition: color-scheme 0.3s ease;
+@keyframes check-in {
+  from { scale: 0; }
+  to { scale: 1; }
 }
 
-body,
-body * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { opacity: 0.4; }
+  to { opacity: 0.7; }
+}
+
+.animate-check-in {
+  animation: check-in 150ms ease-out;
+}
+
+.animate-dot-pulse {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite alternate;
 }

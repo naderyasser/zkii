@@ -9,6 +9,15 @@ interface HeatmapDay {
   level: number;
 }
 
+function computeLevel(total: number, done: number): number {
+  if (total === 0) return 0;
+  if (done === 0) return 1;
+  if (done <= 1) return 2;
+  if (done <= 3) return 3;
+  if (done <= 5) return 4;
+  return 5;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -59,37 +68,14 @@ export async function GET(request: NextRequest) {
       const total = Math.max(log.totalTasks, taskCount.total);
       const done = Math.max(log.completedTasks, taskCount.done);
 
-      let level: number;
-      if (total === 0) {
-        level = 0;
-      } else if (done === 0) {
-        level = 1;
-      } else if (done <= 2) {
-        level = 2;
-      } else if (done <= 4) {
-        level = 3;
-      } else {
-        level = 4;
-      }
-
+      const level = computeLevel(total, done);
       heatmapMap.set(log.date, { date: log.date, total, done, level });
     }
 
     // Add dates that have tasks but no day logs
     for (const [date, counts] of taskCountsByDate) {
       if (!heatmapMap.has(date)) {
-        let level: number;
-        if (counts.total === 0) {
-          level = 0;
-        } else if (counts.done === 0) {
-          level = 1;
-        } else if (counts.done <= 2) {
-          level = 2;
-        } else if (counts.done <= 4) {
-          level = 3;
-        } else {
-          level = 4;
-        }
+        const level = computeLevel(counts.total, counts.done);
 
         heatmapMap.set(date, {
           date,

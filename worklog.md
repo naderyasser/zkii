@@ -340,3 +340,49 @@ Stage Summary:
 - Border color darkened from warm-gray to slate-300 for clear card/input definition
 - All "yellow" accents now use amber-700/amber-500 in light mode (cyber-yellow reserved for dark mode)
 - Zero changes to dark mode — cyberpunk aesthetic preserved exactly
+
+---
+Task ID: 11
+Agent: Main Orchestrator
+Task: Zaki v0 Redesign — Koala Neovim dark-only palette, Linear/Raycast aesthetic, complete component restructure
+
+Work Log:
+- Complete visual redesign: removed light mode entirely, Koala Neovim palette only
+- Rewrote globals.css with full Koala color system mapped to both CSS variables and @theme tokens
+  - Backgrounds: base #1a1a2e, surface #16213e, elevated #0f3460, hover #1e2a4a
+  - Text: primary #a9b1d6, secondary #565f89, muted #3b4261, bright #c0caf5
+  - Accents: coral #e94560, blue #7aa2f7, purple #bb9af7, teal #73daca, yellow #e0af68, orange #ff9e64, green #9ece6a
+  - Borders: subtle #292e42, default #3b4261, strong #565f89
+  - All shadcn/ui semantic variables remapped to Koala values
+  - 4 minimal animations: check-in, dot-pulse, slide-up, shimmer
+- Updated tailwind.config.ts with font families (Inter, Cairo, JetBrains Mono) and border radius
+- Created types/index.ts with all shared TypeScript interfaces (Task, ChatMessage, HeatmapDay, Account, etc.)
+- Created lib/auth.ts + lib/api.ts: auth helpers + complete API client with all existing endpoints
+- Created 3 Zustand stores:
+  - store/auth.ts: multi-account system with add/remove/switch/logout
+  - store/ui.ts: sidebar, heatmap, chat, day detail state
+  - store/tasks.ts: active filter, selected task
+- Created 3 hooks:
+  - hooks/useActiveAccount.ts: returns active account + initials + actions
+  - hooks/useTasks.ts: useTasks, useCreateTask, useCompleteTask, useDeleteTask, useUpdateTask
+  - hooks/useChat.ts: messages state + send function with React Query invalidation
+- Built 5 ui-koala/ components: Skeleton, EmptyState, PriorityBorder
+- Built 2 account/ components: AccountSwitcher (28px avatar + teal dot), AccountDropdown
+- Built 5 tasks/ components: TaskRow, TaskFilters, AddTaskInput, AddTaskForm, TaskList
+- Built 5 chat/ components: TypingIndicator, ChatMessage, ToolCallRow, ChatInput, ChatPanel
+- Built 4 heatmap/ components: YearlyHeatmap, HeatmapGrid, DayDetailPanel, DayTaskList
+- Rewrote layout.tsx: removed ThemeProvider, dark-only, Inter + Cairo + JetBrains Mono fonts
+- Rewrote page.tsx: 3-state UI (empty/has-tasks/loading), sidebar + canvas layout, tab switcher
+- Removed all old component files (PomodoroTimer, ThemeToggle, IntegrationsPanel, etc.)
+- Lint passes clean, dev server returning 200
+
+Stage Summary:
+- Complete v0 redesign with Koala Neovim dark-only palette
+- Linear.app / Raycast aesthetic: calm, typographic, minimal chrome
+- Dark-only — no light mode toggle, no ThemeProvider
+- Component architecture restructured into directories: chat/, tasks/, heatmap/, account/, ui-koala/
+- All components under 150 lines, strict TypeScript, no any, no console.log
+- RTL-compliant: ps-/pe- padding, scale-x-[-1] on directional icons
+- Zustand stores for auth, ui, and tasks state
+- Custom hooks wrapping React Query for tasks and chat
+- Backend API endpoints unchanged — all existing routes still functional
