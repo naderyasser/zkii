@@ -21,6 +21,8 @@ export interface TaskWithComputed {
   aiScore: number;
   daysUntilDue: number | null;
   pressureLevel: 'chill' | 'normal' | 'urgent' | 'overdue';
+  boardColumn: string;
+  projectId: string | null;
 }
 
 const PRIORITY_IMPORTANCE: Record<string, number> = {
@@ -77,6 +79,8 @@ export function enrichTask(task: Record<string, unknown>): TaskWithComputed {
     aiScore: task.aiScore as number,
     daysUntilDue,
     pressureLevel,
+    boardColumn: (task.boardColumn as string) ?? 'todo',
+    projectId: (task.projectId as string | null) ?? null,
   };
 }
 

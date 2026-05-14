@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, notes, category, priority, dueDatetime, userId, isRecurring, recurrenceRule } = body;
+    const { title, notes, category, priority, dueDatetime, userId, isRecurring, recurrenceRule, boardColumn, projectId } = body;
 
     if (!title || typeof title !== 'string' || title.trim() === '') {
       return NextResponse.json(
@@ -132,6 +132,8 @@ export async function POST(request: NextRequest) {
         dueDatetime: dueDatetime ? new Date(dueDatetime) : null,
         isRecurring: isRecurring || false,
         recurrenceRule: recurrenceRule || '',
+        boardColumn: boardColumn || 'todo',
+        projectId: projectId || null,
         aiScore,
       },
     });

@@ -25,6 +25,9 @@ export interface Task {
   aiScore: number;
   daysUntilDue: number | null;
   pressureLevel: PressureLevel;
+  boardColumn: BoardColumn;
+  projectId: string | null;
+  project?: Project;
 }
 
 export type TaskCategory = 'work' | 'personal' | 'errands' | 'calls' | 'reading';
@@ -32,6 +35,58 @@ export type TaskPriority = 'urgent' | 'high' | 'medium' | 'low';
 export type TaskStatus = 'pending' | 'done' | 'cancelled';
 export type TaskSource = 'manual' | 'chat' | 'email' | 'ai';
 export type PressureLevel = 'chill' | 'normal' | 'urgent' | 'overdue';
+export type BoardColumn = 'todo' | 'in_progress' | 'review' | 'done';
+
+/* ─── Project ──────────────────────────────────────────── */
+export interface Project {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+  tasks?: Task[];
+  taskCount?: number;
+  doneCount?: number;
+}
+
+/* ─── Habit ────────────────────────────────────────────── */
+export interface Habit {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  frequency: HabitFrequency;
+  targetCount: number;
+  createdAt: string;
+  updatedAt: string;
+  streak?: number;
+  todayDone?: boolean;
+  weekLogs?: HabitLog[];
+}
+
+export type HabitFrequency = 'daily' | 'weekly' | 'custom';
+
+export interface CreateHabitInput {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  frequency?: HabitFrequency;
+  targetCount?: number;
+}
+
+export interface HabitLog {
+  id: string;
+  habitId: string;
+  date: string;
+  count: number;
+  createdAt: string;
+}
 
 /* ─── Chat ─────────────────────────────────────────────── */
 export interface ChatMessage {
@@ -115,4 +170,6 @@ export interface CreateTaskInput {
   dueDatetime?: string;
   isRecurring?: boolean;
   recurrenceRule?: string;
+  boardColumn?: BoardColumn;
+  projectId?: string;
 }

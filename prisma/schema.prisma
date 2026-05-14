@@ -21,6 +21,8 @@ model User {
   emailSuggestions EmailSuggestion[]
   oAuthConfigs OAuthConfig[]
   tags      Tag[]
+  projects  Project[]
+  habits    Habit[]
 }
 
 model Task {
@@ -47,6 +49,13 @@ model Task {
 
   // AI priority score (computed, cached)
   aiScore Float @default(0)
+
+  // Kanban board column
+  boardColumn String  @default("todo") // todo | in_progress | review | done
+
+  // Project relation
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   dayLogs DayLogTask[]
   tags    TagTask[]
@@ -129,4 +138,51 @@ model TagTask {
   task   Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@unique([tagId, taskId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Projects — Group tasks by project
+// ═══════════════════════════════════════════════════════════════
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String   @default("")
+  color       String   @default("#7aa2f7")
+  icon        String   @default("📁")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+
+  @@unique([userId, name])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Habits — Daily habit tracking with streaks
+// ═══════════════════════════════════════════════════════════════
+model Habit {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String     @default("")
+  icon        String     @default("✅")
+  color       String     @default("#9ece6a")
+  frequency   String     @default("daily") // daily | weekly | custom
+  targetCount Int        @default(1)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  logs        HabitLog[]
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      String   // YYYY-MM-DD
+  count     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
 }

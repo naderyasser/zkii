@@ -1,92 +1,122 @@
+# Zaki Worklog
+
 ---
 Task ID: 1
-Agent: main
-Task: Fix EmptyState and AccountSwitcher import errors, enhance dashboard
+Agent: Main
+Task: Explore current project state and read codebase
 
 Work Log:
-- Fixed EmptyState named export → default export to match page.tsx import
-- Fixed AccountSwitcher named export → default export to match page.tsx import
-- Created IntegrationsPanel component (Google OAuth connect/disconnect UI)
-- Created WeeklyScore component (weekly productivity comparison)
-- Enhanced page.tsx: added chat toggle button, WeeklyScore, IntegrationsPanel
-- Enhanced ChatPanel: wider sidebar (280px), better header with Sparkles icon, added "ملخص اليوم" suggestion
-- Enhanced ChatInput: borderless input inside a bordered container with focus states
-- Enhanced TaskFilters: pill-style tabs with icons (Inbox, Sun, AlertTriangle, CheckCircle2)
-- Enhanced AddTaskInput: borderless input with calendar icon, better focus states
-- Created sample tasks for demonstration
-- Verified all APIs return 200 (tasks, weekly-score, integrations/status)
-- ESLint passes with no errors
+- Read all key files: page.tsx, types/index.ts, store/ui.ts, api.ts, schema.prisma
+- Analyzed existing component architecture
+- Identified existing features: Tasks, Chat, Heatmap, Analytics, Focus Mode, Voice Input, Tags, Notifications, Web Search
+- Identified missing features from original 15-item list
 
 Stage Summary:
-- App fully compiles and renders at GET / 200
-- Dashboard shows: Chat sidebar + Task list + Weekly Score + Integrations Panel
-- All components properly use Koala dark theme
-- Chat panel has suggestions including "ملخص اليوم" for Daily Brief
-- Google OAuth integration panel with connect/disconnect functionality
+- Project is feature-rich with 9 major feature areas already implemented
+- Need to add: Kanban Board, Habit Tracking, Projects, AI Motivational Images, Report Export
+- Prisma schema needs new models: Project, Habit, HabitLog, and new fields on Task
 
 ---
-Task ID: 2
-Agent: main
-Task: Add 4 new features: Voice input, Focus Mode, Analytics Dashboard, Recurring Tasks
+Task ID: 2-a
+Agent: Main (delegated)
+Task: Build API routes for Projects, Habits, Kanban, Export
 
 Work Log:
-- Created ASR API route at /api/asr/route.ts using z-ai-web-dev-sdk
-- Enhanced AddTaskInput with Mic button for voice recording (WebRTC → base64 → ASR API)
-- Created FocusMode component at /components/focus/FocusMode.tsx (Pomodoro 25/5, progress ring, start/pause/reset/skip)
-- Created AnalyticsDashboard at /components/analytics/AnalyticsDashboard.tsx (3 ECharts: weekly trend line, priority donut, category bars)
-- Added "التحليلات" tab to page.tsx header
-- Enhanced AddTaskForm with recurring task toggle + frequency picker (daily/weekdays/weekly/biweekly/monthly)
-- Added recurring icon (Repeat) to TaskRow for recurring tasks
-- Updated TaskRow with Zap (focus) button + onFocus prop
-- Updated TaskList with onFocusTask prop
-- Updated CreateTaskInput type with isRecurring + recurrenceRule fields
-- Updated tasks API route to handle isRecurring + recurrenceRule in POST body
-- All ESLint checks pass, all APIs return 200, page renders correctly
+- Updated Prisma schema with Project, Habit, HabitLog models
+- Added boardColumn and projectId fields to Task model
+- Ran db:push successfully
+- Created /api/projects/route.ts (GET, POST)
+- Created /api/projects/[id]/route.ts (PATCH, DELETE)
+- Created /api/habits/route.ts (GET with streak computation, POST)
+- Created /api/habits/[id]/route.ts (PATCH, DELETE)
+- Created /api/habits/[id]/toggle/route.ts (POST - toggle habit log for today)
+- Created /api/habits/[id]/logs/route.ts (GET - last N days)
+- Created /api/tasks/kanban/route.ts (GET - tasks grouped by boardColumn)
+- Created /api/export/route.ts (GET - CSV export)
+- Updated /api/tasks/route.ts (POST accepts boardColumn, projectId)
+- Updated /api/tasks/[id]/route.ts (PATCH accepts boardColumn)
+- Updated task-utils.ts (enrichTask includes boardColumn, projectId)
 
 Stage Summary:
-- 4 major features added: 🎤 Voice, ⏱️ Focus Mode, 📊 Analytics, 🔄 Recurring
-- App now has 3 tabs: المهام, النشاط, التحليلات
-- Focus mode accessible via Zap button on any pending task
-- Voice recording uses browser MediaRecorder + ASR SDK
-- Analytics shows 3 interactive ECharts with Koala dark theme
+- All API routes created and working
+- Streak computation logic implemented for habits
+- CSV export endpoint working
+- ESLint passes
+
+---
+Task ID: 2-b
+Agent: Main (delegated)
+Task: Build Kanban Board component
+
+Work Log:
+- Created /src/components/kanban/KanbanBoard.tsx
+- 4 columns: للتنفيذ (Todo), جاري التنفيذ (In Progress), مراجعة (Review), مكتمل (Done)
+- @dnd-kit drag-and-drop with DndContext, DragOverlay, SortableContext
+- Task cards with priority borders, category badges, due dates
+- DragOverlay ghost card during drag
+- Droppable columns for dropping into empty columns
+- React Query with mutation for boardColumn updates
+- Custom scrollbar styles added to globals.css
+
+Stage Summary:
+- Full kanban board with drag-and-drop between columns
+- RTL layout, responsive horizontal scroll
+- Loading skeleton and empty states
+
+---
+Task ID: 2-c
+Agent: Main (delegated)
+Task: Build Habit Tracking components
+
+Work Log:
+- Created /src/hooks/useHabits.ts (5 hooks)
+- Created /src/components/habits/HabitCard.tsx with mini heatmap, toggle, streak
+- Created /src/components/habits/HabitList.tsx with add dialog
+- Added CreateHabitInput type to types/index.ts
+- Add habit form: name, description, icon picker, color picker, frequency select
+
+Stage Summary:
+- Full habit tracking system with CRUD, streaks, and daily toggle
+- 7-day mini heatmap visualization
+- RTL Arabic UI with Koala theme
+
+---
+Task ID: 2-d
+Agent: Main (delegated)
+Task: Build Projects component
+
+Work Log:
+- Created /src/hooks/useProjects.ts (4 hooks)
+- Created /src/components/projects/ProjectCard.tsx with progress bar
+- Created /src/components/projects/ProjectList.tsx with add dialog
+- Project cards show: icon, name, description, progress bar, task count
+- Add project dialog: name, description, icon picker, color picker
+
+Stage Summary:
+- Full project management with CRUD and task progress tracking
+- Animated progress bars with framer-motion
+- RTL Arabic UI matching existing style
 
 ---
 Task ID: 3
-Agent: main
-Task: Bug fixes + 5 new features: Command Palette, Tags, Notifications, Web Search, type fixes
+Agent: Main
+Task: Implement AI Motivational Images and Report Export
 
 Work Log:
-- Fixed DEFAULT_USER_ID inconsistency: auth.ts now imports from task-utils.ts (single source of truth)
-- Fixed OAuth disconnect: changed <a href> (GET) to <button onClick> (POST) in IntegrationsPanel
-- Fixed TaskStatus type: added 'cancelled' to match Prisma schema
-- Fixed TaskSource type: added 'ai' to match Prisma schema
-- Created CommandPalette component at /components/command/CommandPalette.tsx (⌘K shortcut, search tasks, quick actions, navigation)
-- Created Tag + TagTask Prisma models (schema updated, db:push complete)
-- Created Tag API routes: GET/POST /api/tags, DELETE /api/tags/[id], GET/POST/DELETE /api/tasks/[id]/tags
-- Created TagBadge component (colored pill with dot + name, optional removable X)
-- Created TagPicker component (search/create tags, toggle on/off, inline creation)
-- Created useTags hooks (6 hooks: useTags, useCreateTag, useDeleteTag, useTaskTags, useAddTagToTask, useRemoveTagFromTask)
-- Added Tag type to types/index.ts
-- Added tag API functions to lib/api.ts
-- Updated TaskRow to show tags: Tag toggle button (Tag icon), expandable tags row with TagBadge + TagPicker
-- Created NotificationStore at /store/notifications.ts (notifications, unreadCount, read/clear actions)
-- Created NotificationBell component (bell icon with coral badge for unread count, Popover dropdown)
-- Created NotificationPanel component (list of overdue/due_today/due_soon with icons, mark read, clear all)
-- Created useNotifications hook (fetches overdue + today tasks, polls every 5 min, toasts for new overdue)
-- Added NotificationBell to page.tsx header
-- Added web_search tool to AI chat agent (8 tools total now)
-- Updated ToolCallRow to show Search icon with koala-teal color for web_search
-- Updated chat system prompt with web search instructions
-- Added Search button + ⌘K hint to page.tsx header
-- Added CommandPalette to page.tsx with full wiring
-- Created sample tag "مشروع" (#7aa2f7) via API
-- All ESLint checks pass
-- All APIs return 200 (tags, tasks, weekly-score, integrations, overdue, today)
+- Created /api/motivation/route.ts (POST - AI image generation with z-ai-web-dev-sdk)
+- Created /src/components/motivation/MotivationPanel.tsx
+  - 8 motivation themes: mountain peak, ocean waves, space, fire, forest, city, aurora, storm
+  - Custom prompt input
+  - Image generation with loading state
+  - Download button
+- Created /src/components/export/ExportPanel.tsx
+  - CSV export with download functionality
+- Added API functions to lib/api.ts: generateMotivationImage, exportTasksCSV
+- Wired both into page.tsx (tasks tab)
+- Updated page.tsx with 6 tabs: المهام, كانبان, العادات, المشاريع, النشاط, التحليلات
+- Fixed task-utils.ts: added boardColumn and projectId to TaskWithComputed and enrichTask
 
 Stage Summary:
-- 🐛 4 bugs fixed: DEFAULT_USER_ID inconsistency, OAuth disconnect GET→POST, TaskStatus/Source type mismatches
-- ⌘ Command Palette: ⌘K shortcut, search tasks, quick actions, tab navigation
-- 🏷️ Tags system: full CRUD (model + API + UI), TagBadge, TagPicker in TaskRow
-- 🔔 Smart Notifications: overdue/due_today/due_soon alerts, bell icon with badge, toast notifications
-- 🔍 Web Search in Chat: zaki can now search the internet using web_search tool
-- App now has 9 feature areas: Tasks, Chat, Heatmap, Analytics, Focus, Voice, Tags, Notifications, Web Search
+- 5 new features fully implemented: Kanban Board, Habit Tracking, Projects, AI Motivational Images, CSV Export
+- All APIs returning 200, ESLint passes
+- App renders correctly with all 6 tabs visible in the header

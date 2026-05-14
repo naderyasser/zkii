@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
-import { Terminal, Activity, PanelRightClose, PanelRightOpen, BarChart3, Zap, Search } from 'lucide-react';
+import { Terminal, Activity, PanelRightClose, PanelRightOpen, BarChart3, Zap, Search, LayoutGrid, Target, FolderKanban } from 'lucide-react';
 import { useUIStore } from '@/store/ui';
 import { useChat } from '@/hooks/useChat';
 import * as api from '@/lib/api';
@@ -23,8 +23,13 @@ import { Button } from '@/components/ui/button';
 import { useCreateTask, useCompleteTask } from '@/hooks/useTasks';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import KanbanBoard from '@/components/kanban/KanbanBoard';
+import HabitList from '@/components/habits/HabitList';
+import ProjectList from '@/components/projects/ProjectList';
+import MotivationPanel from '@/components/motivation/MotivationPanel';
+import ExportPanel from '@/components/export/ExportPanel';
 
-type MainTab = 'tasks' | 'heatmap' | 'analytics';
+type MainTab = 'tasks' | 'kanban' | 'habits' | 'projects' | 'heatmap' | 'analytics';
 
 export default function Home() {
   const [mainTab, setMainTab] = useState<MainTab>('tasks');
@@ -136,6 +141,45 @@ export default function Home() {
               variant="ghost"
               size="sm"
               className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'kanban'
+                  ? 'bg-hover text-accent-blue'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('kanban')}
+            >
+              <LayoutGrid className="size-3 me-1" />
+              كانبان
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'habits'
+                  ? 'bg-hover text-koala-green'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('habits')}
+            >
+              <Target className="size-3 me-1" />
+              العادات
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'projects'
+                  ? 'bg-hover text-koala-purple'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('projects')}
+            >
+              <FolderKanban className="size-3 me-1" />
+              المشاريع
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
                 mainTab === 'heatmap'
                   ? 'bg-hover text-accent-blue'
                   : 'text-koala-secondary hover:text-koala-primary'
@@ -222,7 +266,7 @@ export default function Home() {
 
         {/* Main Canvas */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-3xl mx-auto p-6">
+          <div className={mainTab === 'kanban' ? 'h-full' : 'max-w-3xl mx-auto p-6'}>
             <div className="flex flex-col gap-6">
               {mainTab === 'tasks' && (
                 <>
@@ -231,7 +275,23 @@ export default function Home() {
                     <WeeklyScore />
                     <IntegrationsPanel />
                   </div>
+                  <MotivationPanel />
+                  <ExportPanel />
                 </>
+              )}
+
+              {mainTab === 'kanban' && (
+                <div className="p-4 md:p-6">
+                  <KanbanBoard onFocusTask={handleFocusTask} />
+                </div>
+              )}
+
+              {mainTab === 'habits' && (
+                <HabitList />
+              )}
+
+              {mainTab === 'projects' && (
+                <ProjectList />
               )}
 
               {mainTab === 'heatmap' && (

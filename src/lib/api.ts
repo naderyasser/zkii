@@ -78,6 +78,11 @@ export async function getOAuthStatus() {
   return request<OAuthStatus>('/api/integrations/status');
 }
 
+/* ─── Kanban ───────────────────────────────────────────── */
+export async function getKanbanTasks() {
+  return request<Task[]>('/api/tasks/kanban');
+}
+
 /* ─── Tags ─────────────────────────────────────────────── */
 export async function getTags() {
   return request<TagType[]>('/api/tags');
@@ -112,6 +117,78 @@ export async function removeTagFromTask(taskId: string, tagId: string) {
   });
 }
 
+/* ─── Habits ────────────────────────────────────────────── */
+export async function getHabits() {
+  return request<HabitType[]>('/api/habits');
+}
+
+export async function createHabit(data: CreateHabitInput) {
+  return request<HabitType>('/api/habits', {
+    method: 'POST',
+    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+  });
+}
+
+export async function deleteHabit(id: string) {
+  return request<{ success: boolean }>(`/api/habits/${id}`, { method: 'DELETE' });
+}
+
+export async function toggleHabit(id: string) {
+  return request<HabitType>(`/api/habits/${id}/toggle`, { method: 'POST' });
+}
+
+export async function getHabitLogs(habitId: string, days: number = 7) {
+  return request<HabitLogType[]>(`/api/habits/${habitId}/logs?days=${days}`);
+}
+
+/* ─── Projects ─────────────────────────────────────────── */
+export async function getProjects() {
+  return request<ProjectType[]>('/api/projects');
+}
+
+export async function createProject(data: {
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+}) {
+  return request<ProjectType>('/api/projects', {
+    method: 'POST',
+    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+  });
+}
+
+export async function updateProject(
+  id: string,
+  data: Partial<{ name: string; description: string; color: string; icon: string }>
+) {
+  return request<ProjectType>(`/api/projects/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteProject(id: string) {
+  return request<{ message: string }>(`/api/projects/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+/* ─── Motivation (AI Image Generation) ──────────────────── */
+export async function generateMotivationImage(prompt: string) {
+  return request<{ success: boolean; imageBase64: string; prompt: string }>('/api/motivation', {
+    method: 'POST',
+    body: JSON.stringify({ prompt }),
+  });
+}
+
+/* ─── Export ───────────────────────────────────────────── */
+export async function exportTasksCSV() {
+  const res = await fetch('/api/export?format=csv');
+  if (!res.ok) throw new Error('Export failed');
+  return res.text();
+}
+
 /* ─── Type imports for return types ────────────────────── */
 import type {
   Task,
@@ -122,4 +199,8 @@ import type {
   ChatResponse,
   OAuthStatus,
   Tag as TagType,
+  Habit as HabitType,
+  HabitLog as HabitLogType,
+  CreateHabitInput,
+  Project as ProjectType,
 } from '@/types';

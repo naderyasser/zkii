@@ -56,6 +56,8 @@ export async function PATCH(
     }
     if (body.isRecurring !== undefined) updateData.isRecurring = body.isRecurring;
     if (body.recurrenceRule !== undefined) updateData.recurrenceRule = body.recurrenceRule;
+    if (body.boardColumn !== undefined) updateData.boardColumn = body.boardColumn;
+    if (body.projectId !== undefined) updateData.projectId = body.projectId || null;
 
     // Re-compute aiScore based on updated values
     const updatedPriority = (updateData.priority as string) || existing.priority;
