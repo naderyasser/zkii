@@ -1,8 +1,8 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
-import { Terminal, Activity, MessageCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Terminal, Activity, MessageCircle, PanelRightClose, PanelRightOpen, BarChart3, Zap } from 'lucide-react';
 import { useUIStore } from '@/store/ui';
 import { useChat } from '@/hooks/useChat';
 import * as api from '@/lib/api';
@@ -15,11 +15,13 @@ import YearlyHeatmap from '@/components/heatmap/YearlyHeatmap';
 import DayDetailPanel from '@/components/heatmap/DayDetailPanel';
 import WeeklyScore from '@/components/heatmap/WeeklyScore';
 import IntegrationsPanel from '@/components/integrations/IntegrationsPanel';
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
+import FocusMode from '@/components/focus/FocusMode';
 import AccountSwitcher from '@/components/account/AccountSwitcher';
 import { Button } from '@/components/ui/button';
-import { useCreateTask } from '@/hooks/useTasks';
+import { useCreateTask, useCompleteTask } from '@/hooks/useTasks';
 
-type MainTab = 'tasks' | 'heatmap';
+type MainTab = 'tasks' | 'heatmap' | 'analytics';
 
 export default function Home() {
   const [mainTab, setMainTab] = useState<MainTab>('tasks');
@@ -30,8 +32,13 @@ export default function Home() {
   const openDayDetail = useUIStore((s) => s.openDayDetail);
   const closeDayDetail = useUIStore((s) => s.closeDayDetail);
 
+  // Focus mode state
+  const [focusTask, setFocusTask] = useState<Task | null>(null);
+  const [focusOpen, setFocusOpen] = useState(false);
+
   const createTask = useCreateTask();
-  const queryClient = useQueryClient();
+  const completeTask = useCompleteTask();
+  const { sendMessage } = useChat();
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ['tasks', 'all'],
@@ -39,7 +46,6 @@ export default function Home() {
   });
 
   const hasTasks = tasks.length > 0;
-  const { sendMessage, isPending: chatPending } = useChat();
 
   function handleSuggestionClick(text: string) {
     sendMessage(text);
@@ -50,6 +56,22 @@ export default function Home() {
     if (!title.trim()) return;
     createTask.mutate({ title: title.trim() });
   }
+
+  const handleFocusTask = useCallback((task: Task) => {
+    setFocusTask(task);
+    setFocusOpen(true);
+  }, []);
+
+  const handleFocusComplete = useCallback(() => {
+    if (focusTask) {
+      completeTask.mutate(focusTask.id);
+    }
+  }, [focusTask, completeTask]);
+
+  const handleCloseFocus = useCallback(() => {
+    setFocusOpen(false);
+    setFocusTask(null);
+  }, []);
 
   // ── State 1: Empty / First Visit ──────────────────────────────
   if (!tasksLoading && !hasTasks) {
@@ -105,10 +127,36 @@ export default function Home() {
               <Activity className="size-3 me-1" />
               النشاط
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2.5 text-[12px] rounded-sm transition-colors ${
+                mainTab === 'analytics'
+                  ? 'bg-hover text-accent-blue'
+                  : 'text-koala-secondary hover:text-koala-primary'
+              }`}
+              onClick={() => setMainTab('analytics')}
+            >
+              <BarChart3 className="size-3 me-1" />
+              التحليلات
+            </Button>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Focus mode quick button */}
+          {focusTask && !focusOpen && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[11px] text-koala-green hover:text-koala-green hover:bg-koala-green/10 gap-1"
+              onClick={() => setFocusOpen(true)}
+            >
+              <Zap className="size-3" />
+              تركيز
+            </Button>
+          )}
+
           {/* Chat toggle */}
           <Button
             variant="ghost"
@@ -141,22 +189,26 @@ export default function Home() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto p-6">
             <div className="flex flex-col gap-6">
-              {mainTab === 'tasks' ? (
+              {mainTab === 'tasks' && (
                 <>
-                  <TaskList />
-
-                  {/* Bottom panels: Weekly Score + Integrations */}
+                  <TaskList onFocusTask={handleFocusTask} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <WeeklyScore />
                     <IntegrationsPanel />
                   </div>
                 </>
-              ) : (
+              )}
+
+              {mainTab === 'heatmap' && (
                 <>
                   <WeeklyScore />
                   <YearlyHeatmap onDayClick={openDayDetail} />
                   <IntegrationsPanel />
                 </>
+              )}
+
+              {mainTab === 'analytics' && (
+                <AnalyticsDashboard />
               )}
             </div>
           </div>
@@ -168,6 +220,14 @@ export default function Home() {
         date={dayDetailDate}
         open={dayDetailOpen}
         onClose={closeDayDetail}
+      />
+
+      {/* Focus Mode */}
+      <FocusMode
+        task={focusTask}
+        isOpen={focusOpen}
+        onClose={handleCloseFocus}
+        onComplete={handleFocusComplete}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Zap, Repeat } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,12 @@ function formatDue(d: string | null): string {
   try { return formatDistanceToNow(new Date(d), { addSuffix: true, locale: ar }); } catch { return ''; }
 }
 
-export default function TaskRow({ task }: { task: Task }) {
+interface TaskRowProps {
+  task: Task;
+  onFocus?: (task: Task) => void;
+}
+
+export default function TaskRow({ task, onFocus }: TaskRowProps) {
   const [editing, setEditing] = useState(false);
   const [editVal, setEditVal] = useState(task.title);
   const [justChecked, setJustChecked] = useState(false);
@@ -93,6 +98,19 @@ export default function TaskRow({ task }: { task: Task }) {
         <span className="shrink-0 text-[9px] font-mono text-koala-secondary ms-3 me-3">
           {formatDue(task.dueDatetime)}
         </span>
+      )}
+      {/* Recurring indicator */}
+      {task.isRecurring && (
+        <span className="shrink-0 ms-1" title="مهمة متكررة">
+          <Repeat className="size-3 text-koala-teal scale-x-[-1]" />
+        </span>
+      )}
+      {/* Focus mode button - only for pending tasks */}
+      {!isDone && onFocus && (
+        <button onClick={() => onFocus(task)} aria-label="وضع التركيز"
+          className="shrink-0 py-3 text-koala-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 hover:text-koala-green ms-1">
+          <Zap className="size-3.5 scale-x-[-1]" />
+        </button>
       )}
       <button onClick={() => remove.mutate(task.id)} aria-label="حذف المهمة"
         className="shrink-0 pe-3 py-3 text-koala-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 hover:text-coral">

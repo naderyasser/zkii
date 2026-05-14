@@ -31,7 +31,11 @@ function sortTasks(tasks: Task[]): Task[] {
   return [...pending, ...done];
 }
 
-export default function TaskList() {
+interface TaskListProps {
+  onFocusTask?: (task: Task) => void;
+}
+
+export default function TaskList({ onFocusTask }: TaskListProps) {
   const { data: tasks, isLoading } = useTasks();
 
   const sortedTasks = tasks ? sortTasks(tasks) : [];
@@ -58,7 +62,7 @@ export default function TaskList() {
       ) : hasTasks ? (
         <div className="flex flex-col gap-2">
           {sortedTasks.map((task) => (
-            <TaskRow key={task.id} task={task} />
+            <TaskRow key={task.id} task={task} onFocus={onFocusTask} />
           ))}
         </div>
       ) : null}

@@ -104,4 +104,6 @@ export interface CreateTaskInput {
   category?: TaskCategory;
   priority?: TaskPriority;
   dueDatetime?: string;
+  isRecurring?: boolean;
+  recurrenceRule?: string;
 }

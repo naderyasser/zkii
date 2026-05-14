@@ -23,3 +23,29 @@ Stage Summary:
 - All components properly use Koala dark theme
 - Chat panel has suggestions including "ملخص اليوم" for Daily Brief
 - Google OAuth integration panel with connect/disconnect functionality
+
+---
+Task ID: 2
+Agent: main
+Task: Add 4 new features: Voice input, Focus Mode, Analytics Dashboard, Recurring Tasks
+
+Work Log:
+- Created ASR API route at /api/asr/route.ts using z-ai-web-dev-sdk
+- Enhanced AddTaskInput with Mic button for voice recording (WebRTC → base64 → ASR API)
+- Created FocusMode component at /components/focus/FocusMode.tsx (Pomodoro 25/5, progress ring, start/pause/reset/skip)
+- Created AnalyticsDashboard at /components/analytics/AnalyticsDashboard.tsx (3 ECharts: weekly trend line, priority donut, category bars)
+- Added "التحليلات" tab to page.tsx header
+- Enhanced AddTaskForm with recurring task toggle + frequency picker (daily/weekdays/weekly/biweekly/monthly)
+- Added recurring icon (Repeat) to TaskRow for recurring tasks
+- Updated TaskRow with Zap (focus) button + onFocus prop
+- Updated TaskList with onFocusTask prop
+- Updated CreateTaskInput type with isRecurring + recurrenceRule fields
+- Updated tasks API route to handle isRecurring + recurrenceRule in POST body
+- All ESLint checks pass, all APIs return 200, page renders correctly
+
+Stage Summary:
+- 4 major features added: 🎤 Voice, ⏱️ Focus Mode, 📊 Analytics, 🔄 Recurring
+- App now has 3 tabs: المهام, النشاط, التحليلات
+- Focus mode accessible via Zap button on any pending task
+- Voice recording uses browser MediaRecorder + ASR SDK
+- Analytics shows 3 interactive ECharts with Koala dark theme
