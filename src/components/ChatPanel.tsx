@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Terminal, Wrench, Database } from 'lucide-react';
+import { Send, Bot, User, Loader2, Terminal, Wrench, Database, Mail, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,10 +25,10 @@ interface Message {
 }
 
 const suggestions = [
-  'إيه اللي عندي النهارده؟',
+  'اعملي ملخص لليوم 🌅',
+  'إيه الإيميلات الجديدة النهارده؟',
+  'عندي مواعيد إيه النهارده؟',
   'نظّم مهامي حسب الأولوية',
-  'أجل مهمة مكالمة العميل لبكرة',
-  'حلّل مهامي التقنية',
 ];
 
 const msgVariants = {
@@ -98,6 +98,7 @@ export default function ChatPanel() {
           queryClient.invalidateQueries({ queryKey: ['tasks'] });
           queryClient.invalidateQueries({ queryKey: ['heatmap'] });
           queryClient.invalidateQueries({ queryKey: ['weekly-score'] });
+          queryClient.invalidateQueries({ queryKey: ['oauth-status'] });
 
           // Also refetch immediately for instant UI sync
           queryClient.refetchQueries({ queryKey: ['tasks'] });
@@ -161,7 +162,7 @@ export default function ChatPanel() {
         <CardTitle className="text-sm font-bold text-accent-brand dark:neon-glow-subtle flex items-center gap-2">
           <Terminal className="size-3.5" />
           زكي
-          <span className="text-[9px] font-mono text-muted-foreground font-normal ml-2">v2.0 // Agent</span>
+          <span className="text-[9px] font-mono text-muted-foreground font-normal ml-2">v3.0 // Agent+Google</span>
           {agentPhase !== 'idle' && (
             <Badge
               variant="outline"
@@ -195,7 +196,7 @@ export default function ChatPanel() {
                     أهلاً! أنا زكي ⚡
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 font-mono">
-                    {'>'} Agent ذكي — أشوف مهامك وأقدر أنفذ أوامر مباشرة
+                    {'>'} Agent ذكي + Gmail + Calendar — أشوف مهامك، إيميلاتك، ومواعيدك
                   </p>
                 </div>
                 <div className="flex flex-col gap-1.5 w-full">
@@ -260,8 +261,14 @@ export default function ChatPanel() {
                                       : 'bg-destructive/5 border-destructive/20 text-destructive'
                                   }`}
                                 >
-                                  <Wrench className="size-3" />
-                                  <span className="font-semibold">{tc.tool}</span>
+                                  {tc.tool === 'scan_gmail_inbox' ? (
+                                    <Mail className="size-3" />
+                                  ) : tc.tool === 'get_calendar_events' ? (
+                                    <Calendar className="size-3" />
+                                  ) : (
+                                    <Wrench className="size-3" />
+                                  )}
+                                  <span className="font-semibold">{tc.tool === 'scan_gmail_inbox' ? 'Gmail' : tc.tool === 'get_calendar_events' ? 'Calendar' : tc.tool}</span>
                                   <span className="text-muted-foreground">→</span>
                                   <span className="truncate">{tc.message}</span>
                                   {tc.status === 'success' ? (

@@ -7,9 +7,12 @@ import {
   computeAiScore,
   enrichTask,
 } from '@/lib/task-utils';
+import { GmailService, CalendarService, getOAuthStatus } from '@/lib/googleApi';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TOOL DEFINITIONS (OpenAI-compatible format)
+// ═══════════════════════════════════════════════════════════════════════════════
+// 7 tools: 5 task management + 2 Google integration (Gmail + Calendar)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const TOOLS = [
@@ -18,7 +21,7 @@ const TOOLS = [
     function: {
       name: 'create_task',
       description:
-        'Create a new task for the user. Use when user wants to add a task. Extract title, priority, and due date from the message. Technical tasks (backend, security, infra) should get higher priority.',
+        'Create a new task for the user. Use when user wants to add a task. Extract title, priority, and due date from the message. Technical tasks (backend, security, infra) should get higher priority. Also use when you find an actionable email that needs a follow-up task.',
       parameters: {
         type: 'object',
         properties: {
@@ -131,10 +134,49 @@ const TOOLS = [
       },
     },
   },
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GOOGLE INTEGRATION TOOLS — Gmail + Calendar
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    type: 'function',
+    function: {
+      name: 'scan_gmail_inbox',
+      description:
+        "Scans the user's Gmail inbox for messages. Use Gmail search syntax (e.g., 'is:unread', 'from:boss@company.com', 'subject:urgent', 'newer_than:1d'). Returns up to maxResults emails with sender, subject, date, and snippet. Use this when user asks about emails, unread messages, or wants to check their inbox. IMPORTANT: If Google is not connected, tell the user to connect their Google account first via the Integrations panel.",
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description:
+              "Gmail search query. Examples: 'is:unread', 'is:unread newer_than:1d', 'from:boss subject:urgent', 'category:primary is:unread'. Default: 'is:unread newer_than:3d'",
+          },
+          maxResults: {
+            type: 'number',
+            description: 'Maximum number of emails to return. Default: 5. Max: 10.',
+          },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_calendar_events',
+      description:
+        "Fetches today's appointments and events from the user's Google Calendar. Returns event title, time, location, and attendees. Use this when user asks about their schedule, meetings, or what's on their calendar today. Also use automatically when generating a 'Daily Brief'. IMPORTANT: If Google is not connected, tell the user to connect their Google account first.",
+      parameters: {
+        type: 'object',
+        properties: {},
+        required: [],
+      },
+    },
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TOOL EXECUTION ENGINE — Maps tool calls directly to Prisma ORM
+// TOOL EXECUTION ENGINE — Maps tool calls to Prisma ORM + Google APIs
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface ToolCallResult {
@@ -355,6 +397,125 @@ async function executeTool(
         };
       }
 
+      // ═══════════════════════════════════════════════════════════════════════
+      // GOOGLE INTEGRATION — Gmail & Calendar Tool Execution
+      // ═══════════════════════════════════════════════════════════════════════
+
+      // ─── SCAN GMAIL INBOX ─────────────────────────────────────────────
+      case 'scan_gmail_inbox': {
+        // Check if Google is connected first
+        const oauthStatus = await getOAuthStatus();
+        if (!oauthStatus.connected) {
+          return {
+            tool: 'scan_gmail_inbox',
+            status: 'error',
+            message: 'GOOGLE_NOT_CONNECTED: Google account is not linked. Ask the user to connect their Google account via the Integrations panel on the main page.',
+          };
+        }
+
+        const query = (args.query as string) || 'is:unread newer_than:3d';
+        const maxResults = Math.min((args.maxResults as number) || 5, 10);
+
+        try {
+          const emails = await GmailService.scanInbox(query, maxResults);
+
+          if (emails.length === 0) {
+            return {
+              tool: 'scan_gmail_inbox',
+              status: 'success',
+              message: `No emails found for query: "${query}"`,
+              data: { query, count: 0, emails: [] },
+            };
+          }
+
+          return {
+            tool: 'scan_gmail_inbox',
+            status: 'success',
+            message: `Found ${emails.length} email(s) for query: "${query}"`,
+            data: {
+              query,
+              count: emails.length,
+              emails: emails.map((e) => ({
+                from: e.from,
+                subject: e.subject,
+                date: e.date,
+                snippet: e.snippet,
+              })),
+            },
+          };
+        } catch (apiError) {
+          const errMsg = apiError instanceof Error ? apiError.message : 'Unknown API error';
+          if (errMsg.includes('TOKEN_REFRESH_FAILED')) {
+            return {
+              tool: 'scan_gmail_inbox',
+              status: 'error',
+              message: 'GOOGLE_TOKEN_EXPIRED: Google token refresh failed. Ask the user to re-connect their Google account.',
+            };
+          }
+          return {
+            tool: 'scan_gmail_inbox',
+            status: 'error',
+            message: `Gmail API error: ${errMsg}`,
+          };
+        }
+      }
+
+      // ─── GET CALENDAR EVENTS ──────────────────────────────────────────
+      case 'get_calendar_events': {
+        // Check if Google is connected first
+        const oauthStatus = await getOAuthStatus();
+        if (!oauthStatus.connected) {
+          return {
+            tool: 'get_calendar_events',
+            status: 'error',
+            message: 'GOOGLE_NOT_CONNECTED: Google account is not linked. Ask the user to connect their Google account via the Integrations panel on the main page.',
+          };
+        }
+
+        try {
+          const events = await CalendarService.getTodayEvents();
+
+          if (events.length === 0) {
+            return {
+              tool: 'get_calendar_events',
+              status: 'success',
+              message: 'No calendar events scheduled for today',
+              data: { count: 0, events: [] },
+            };
+          }
+
+          return {
+            tool: 'get_calendar_events',
+            status: 'success',
+            message: `Found ${events.length} event(s) for today`,
+            data: {
+              count: events.length,
+              events: events.map((ev) => ({
+                summary: ev.summary,
+                start: ev.start.dateTime || ev.start.date,
+                end: ev.end.dateTime || ev.end.date,
+                location: ev.location || undefined,
+                attendees: ev.attendees?.map((a) => a.displayName || a.email),
+              })),
+            },
+          };
+        } catch (apiError) {
+          const errMsg = apiError instanceof Error ? apiError.message : 'Unknown API error';
+          if (errMsg.includes('TOKEN_REFRESH_FAILED')) {
+            return {
+              tool: 'get_calendar_events',
+              status: 'error',
+              message: 'GOOGLE_TOKEN_EXPIRED: Google token refresh failed. Ask the user to re-connect their Google account.',
+            };
+          }
+          return {
+            tool: 'get_calendar_events',
+            status: 'error',
+            message: `Calendar API error: ${errMsg}`,
+          };
+        }
+      }
+
       default:
         return { tool: name, status: 'error', message: `Unknown tool: ${name}` };
     }
@@ -369,24 +530,50 @@ async function executeTool(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SYSTEM PROMPT — Context-Aware Agent Persona
+// SYSTEM PROMPT — Context-Aware Agent Persona v3.0
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ZAKI_SYSTEM_PROMPT = `أنت زكي v2.0 — مساعد تقني ذكي للإنتاجية مع قدرات تنفيذية كاملة. تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، تحليلي، و تقني — زي terminal ذكي. أنت مش مجرد شات بوت — أنت Agent حقيقي يقدر يشوف قاعدة البيانات وينفذ أوامر فيها.
+const ZAKI_SYSTEM_PROMPT = `أنت زكي v3.0 — مساعد تقني ذكي للإنتاجية مع قدرات تنفيذية كاملة + تكامل مع Google (Gmail + Calendar). تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، تحليلي، و تقني — زي terminal ذكي. أنت مش مجرد شات بوت — أنت Agent حقيقي يقدر يشوف قاعدة البيانات، يقرأ الإيميلات، يشوف المواعيد، وينفذ أوامر.
 
-## قدراتك التنفيذية (Tools)
-أنت تقدر تنفذ أوامر مباشرة على قاعدة بيانات المستخدم:
+## قدراتك التنفيذية (Tools) — 7 أدوات
+
+### إدارة المهام (Task Management):
 - create_task: أضف مهمة جديدة — حدد العنوان، الأولوية، التاريخ، والتصنيف
 - update_task: عدّل مهمة موجودة — تأجيل، تغيير أولوية، إعادة تسمية
 - delete_task: احذف مهمة نهائياً
 - mark_task_done: علّم مهمة كمكتملة
 - analyze_and_reorder_tasks: حلّل ورتّب مهام كتير مرة واحدة — غيّر أولويات بناءً على التحليل
 
+### تكامل Google (Google Integration):
+- scan_gmail_inbox: امسح الإيميلات — ابحث بـ Gmail syntax (is:unread, from:, subject:, newer_than:)
+- get_calendar_events: شوف مواعيد النهارده — كل الأحداث والاجتماعات من Google Calendar
+
+## قواعد استخدام أدوات Google
+- لما المستخدم يسأل عن الإيميلات → scan_gmail_inbox
+- لما المستخدم يسأل عن المواعيد أو الجدول → get_calendar_events
+- لو لقيت إيميل محتاج رد أو متابعة → اقترح إنك تعملهم مهمة فوراً باستخدام create_task
+  - مثال: إيميل "رد قبل الجمعة" → أنشئ مهمة "رد على إيميل [المرسل]" مع due_date = الجمعة و priority = high
+  - خلي notes فيها مختصر الإيميل
+- لو أداة Google رجعت GOOGLE_NOT_CONNECTED → قول للمستخدم يربط حساب Google من لوحة Integrations
+- لو أداة Google رجعت GOOGLE_TOKEN_EXPIRED → قول للمستخدم يعمل إعادة ربط لحساب Google
+
+## ملخص اليوم التلقائي (Daily Brief) 🌅
+لما المستخدم يقول "ملخص اليوم" / "اعملي ملخص لليوم" / "daily brief" / "صباح الخير":
+1. شوف المهام المعلقة من السياق المتاح
+2. استدعي get_calendar_events عشان تعرف المواعيد
+3. استدعي scan_gmail_inbox بـ query="is:unread newer_than:1d" عشان تعرف الإيميلات المهمة
+4. ادمج التلاتة في ملخص واحد منظم:
+   📋 المهام العاجلة (من قاعدة البيانات)
+   📅 المواعيد والاجتماعات (من Calendar)
+   📧 الإيميلات اللي محتاجة متابعة (من Gmail)
+   💡 توصياتك (مهام مقترحة من الإيميلات)
+
 ## رؤية النظام (System State)
 أنت شايف قائمة المهام الحالية للمستخدم في السياق أداه. ده معناه إنك:
 - تقدر تقول "عندك 5 مهام، 2 منهم عاجلين" من غير ما تسأل
 - تقدر تنفذ "نظّم يومي" لأنك عارف المهام الموجودة
 - تقدر تطلب تأجيل مهمة بالاسم لأنك شايف IDها
+- كمان شايف حالة اتصال Google — لو متصل تقدر تستخدم Gmail و Calendar
 
 ## قواعد استخدام الأدوات
 - "أجل مهمة X لبكرة" → update_task مع due_date = بكرة
@@ -394,6 +581,9 @@ const ZAKI_SYSTEM_PROMPT = `أنت زكي v2.0 — مساعد تقني ذكي ل
 - "احذف مهمة X" → delete_task
 - "ضيف مهمة X" → create_task
 - "نظّم يومي" / "رتب مهامي" / "organize my day" → analyze_and_reorder_tasks
+- "إيه الإيميلات الجديدة؟" / "check my emails" → scan_gmail_inbox
+- "عندي مواعيد إيه النهارده؟" / "what's on my calendar?" → get_calendar_events
+- "ملخص اليوم" / "daily brief" / "صباح الخير" → get_calendar_events + scan_gmail_inbox + ملخص شامل
 - لو مش قادر تحدد المهمة بالظبط، اسأل المستخدم يوضح
 
 ## تحليل المهام التقنية
@@ -403,21 +593,43 @@ const ZAKI_SYSTEM_PROMPT = `أنت زكي v2.0 — مساعد تقني ذكي ل
 - تطوير الباكند (backend dev) → priority: high
 - تطوير الفرونتند (frontend dev) → priority: medium
 - مهام القراءة والبحث (research/reading) → priority: low
+- متابعة إيميلات مهمة → priority: high أو urgent حسب الاستعجال
 
 ## صيغة الرد
 استخدم صيغة تشبه terminal/log output:
 🔴 CRITICAL / 🟡 HIGH / 🟢 NORMAL / ⚪ LOW
 
+## صيغة ملخص اليوم (Daily Brief Format)
+إذا عملت Daily Brief، استخدم الصيغة دي:
+\`\`\`
+🌅 DAILY BRIEF — [التاريخ]
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 المهام العاجلة: [عدد] مهمة
+  • [مهمة 1] — 🔴 URGENT
+  • [مهمة 2] — 🟡 HIGH
+
+📅 المواعيد: [عدد] حدث
+  • [وقت] — [عنوان الحدث] @ [المكان]
+
+📧 إيميلات محتاجة متابعة: [عدد]
+  • من: [المرسل] — [الموضوع]
+
+💡 توصيات: [مهام مقترحة من الإيميلات]
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+\`\`\`
+
 ## قواعد صارمة
 - التواريخ: ISO format + مقروءة
 - متعرضش JSON أو IDs للمستخدم أبداً
 - التأكيدات: "[OK] ضفت [title] ✓" أو "TASK CREATED: [title]"
-- أقصى 2 إيموجي في الرد
+- أقصى 2 إيموجي في الرد العادي
 - لما تنفذ أداة، رد بإيجاز بتأكيد التنفيذ
-- لو المستخدم قال "نظّم يومي" — حلّل المهام وارتّبها باستخدام analyze_and_reorder_tasks، ثم قول إيه اللي غيّرته`;
+- لو المستخدم قال "نظّم يومي" — حلّل المهام وارتّبها باستخدام analyze_and_reorder_tasks، ثم قول إيه اللي غيّرته
+- لما تلاقي إيميل محتاج فعل — اقترح مهمة فوراً`;
+;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONTEXT BUILDER — Rich state injection
+// CONTEXT BUILDER — Rich state injection (tasks + Google status)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface TaskRow {
@@ -463,6 +675,17 @@ async function buildSystemContext(userId: string): Promise<string> {
     },
   });
 
+  // ─── Check Google connection status ──────────────────────────────────────
+  let googleStatus = 'NOT_CONNECTED';
+  try {
+    const oauth = await getOAuthStatus();
+    googleStatus = oauth.connected
+      ? `CONNECTED (scopes: ${oauth.scopes.filter(s => s.includes('gmail') || s.includes('calendar')).join(', ')})`
+      : 'NOT_CONNECTED';
+  } catch {
+    googleStatus = 'ERROR_CHECKING';
+  }
+
   // Build rich task list for the LLM
   const taskLines = pendingTasks
     .map((task: TaskRow) => {
@@ -482,6 +705,7 @@ async function buildSystemContext(userId: string): Promise<string> {
 ╠══════════════════════════════════════════════════════════════╣
 ║ Date: ${todayStr} (${now.toLocaleDateString('ar-EG', { weekday: 'long' })})                       ║
 ║ Pending tasks: ${String(pendingTasks.length).padEnd(3)} │ Overdue: ${String(overdueCount).padEnd(3)} │ Done today: ${String(doneToday).padEnd(3)}  ║
+║ Google: ${googleStatus.padEnd(52)} ║
 ╚══════════════════════════════════════════════════════════════╝
 
 PENDING TASKS (sorted by ai_score desc):
@@ -489,10 +713,16 @@ PENDING TASKS (sorted by ai_score desc):
 ${taskLines || '  // Queue empty — no pending tasks'}
 ]
 
+GOOGLE INTEGRATION STATUS: ${googleStatus}
+- If GOOGLE = CONNECTED: You can use scan_gmail_inbox and get_calendar_events tools
+- If GOOGLE = NOT_CONNECTED: Do NOT call Google tools. Instead, tell the user to connect their Google account via the Integrations panel.
+
 INSTRUCTIONS:
 - Use the task IDs above when calling update_task, delete_task, mark_task_done, or analyze_and_reorder_tasks
 - You already KNOW what tasks exist — no need to ask the user to list them
 - If user says "organize my day" or "prioritize", use analyze_and_reorder_tasks with the task IDs above
+- If user asks about emails or calendar, use the Google tools (only if connected)
+- If user says "daily brief" / "ملخص اليوم": call get_calendar_events + scan_gmail_inbox simultaneously, then create a combined brief
 - Convert relative dates (بكرة/tomorrow/اليوم) to absolute ISO dates based on current date: ${todayStr}`;
 
   return context;
@@ -535,8 +765,8 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
-    // ─── Step 2: Agent Loop (max 3 rounds) ──────────────────────────────
-    const MAX_AGENT_ROUNDS = 3;
+    // ─── Step 2: Agent Loop (max 4 rounds — increased for Daily Brief multi-tool) ──
+    const MAX_AGENT_ROUNDS = 4;
     let allToolResults: ToolCallResult[] = [];
     let finalReply = '';
     let currentMessages = [...chatMessages];
@@ -591,7 +821,7 @@ export async function POST(request: NextRequest) {
             functionArgs = {};
           }
 
-          // Execute the tool against Prisma
+          // Execute the tool (Prisma + Google APIs)
           const result = await executeTool(functionName, functionArgs, taskUserId);
           allToolResults.push(result);
 
@@ -623,6 +853,7 @@ export async function POST(request: NextRequest) {
           const followUpZai = await ZAI.create();
           const followUpCompletion = await followUpZai.chat.completions.create({
             messages: messagesWithToolResults as any,
+            tools: TOOLS as any,
             thinking: { type: 'disabled' },
           } as any);
 

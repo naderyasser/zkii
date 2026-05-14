@@ -246,3 +246,53 @@ Stage Summary:
 - OAuth callback redirects show toast notifications (success/error) on return
 - All endpoints return proper error responses when Google not configured/connected
 - ⚠️ User must provide GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env before testing OAuth flow
+
+---
+Task ID: 9
+Agent: Main Orchestrator
+Task: Bind Zaki AI Agent to Google Tools (Gmail + Calendar) — Phase 3b
+
+Work Log:
+- Added 2 new tool definitions to TOOLS array in /api/chat/route.ts:
+  - scan_gmail_inbox(query, maxResults): Gmail inbox scanning with search syntax support
+  - get_calendar_events(): Today's Google Calendar events with attendees/location
+- Added tool execution logic for both Google tools in executeTool function:
+  - Both tools check getOAuthStatus() first before calling Google APIs
+  - Returns GOOGLE_NOT_CONNECTED error if OAuth not set up, prompting AI to tell user to connect
+  - Returns GOOGLE_TOKEN_EXPIRED error if refresh fails
+  - Gmail: calls GmailService.scanInbox() with query and maxResults params
+  - Calendar: calls CalendarService.getTodayEvents() with event details mapping
+  - Proper error handling for API failures with user-friendly messages
+- Updated ZAKI_SYSTEM_PROMPT to v3.0 with comprehensive Google integration instructions:
+  - 7 tools documented (5 task + 2 Google)
+  - Rules for when to use scan_gmail_inbox and get_calendar_events
+  - Auto-suggestion to create tasks from actionable emails (e.g., "Reply by Friday" → create_task)
+  - GOOGLE_NOT_CONNECTED / GOOGLE_TOKEN_EXPIRED handling instructions
+  - Complete Daily Brief workflow: combine tasks + calendar + emails into one summary
+  - Daily Brief format template with sections for tasks, calendar, emails, and recommendations
+- Updated buildSystemContext() to include Google connection status:
+  - Fetches OAuth status via getOAuthStatus()
+  - Injects Google: CONNECTED/NOT_CONNECTED into system state box
+  - Includes instructions about when Google tools can/cannot be used
+- Increased agent loop max rounds from 3 to 4 (Daily Brief needs multi-tool calls)
+- Updated ChatPanel.tsx:
+  - Version badge: v3.0 // Agent+Google
+  - New suggestion chips: "اعملي ملخص لليوم 🌅", "إيه الإيميلات الجديدة النهارده؟", "عندي مواعيد إيه النهارده؟"
+  - Tool call indicators now show Mail icon for Gmail, Calendar icon for Calendar (instead of generic Wrench)
+  - Tool names displayed as "Gmail" / "Calendar" for Google tools
+  - Added oauth-status to cache invalidation list
+  - Updated welcome text: "Agent ذكي + Gmail + Calendar"
+- Tested all scenarios:
+  - "اعملي ملخص لليوم" → Full Daily Brief with task list, Google not connected warning ✓
+  - "إيه الإيميلات الجديدة النهارده؟" → AI correctly detects Google not connected ✓
+  - "ضيف مهمة مراجعة الإيميلات" → create_task still works with tool call result ✓
+- Lint passes clean
+
+Stage Summary:
+- Zaki AI Agent now has 7 tools: 5 task management + 2 Google integration
+- Daily Brief workflow: tasks + calendar + emails combined into structured summary
+- AI automatically suggests creating tasks from actionable emails
+- Google connection status injected into every chat context
+- Graceful error handling: GOOGLE_NOT_CONNECTED → user guidance, TOKEN_EXPIRED → re-auth prompt
+- ChatPanel shows specialized icons for Gmail/Calendar tool calls
+- Agent loop increased to 4 rounds for multi-tool Daily Brief scenarios
