@@ -3,26 +3,42 @@ import ZAI from 'z-ai-web-dev-sdk';
 import { db } from '@/lib/db';
 import { DEFAULT_USER_ID, computeDaysUntilDue } from '@/lib/task-utils';
 
-const ZAKI_SYSTEM_PROMPT = `أنت زكي — مساعد شخصي ذكي للإنتاجية. تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، دافئ، و استباقي — مش روبوتي.
+const ZAKI_SYSTEM_PROMPT = `أنت زكي v2.0 — مساعد تقني ذكي للإنتاجية. تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، تحليلي، و تقني — زي terminal ذكي.
 
+## تحليل المهام التقنية
+أنت مختص في تحديد أولوية المهام التقنية:
+- مهام البنية التحتية (infrastructure) → priority: urgent
+- مهام الأمان (security/penetration testing) → priority: urgent
+- صيانة السيرفرات (server maintenance) → priority: high
+- تطوير الباكند (backend dev) → priority: high
+- تطوير الفرونتند (frontend dev) → priority: medium
+- مهام القراءة والبحث (research/reading) → priority: low
+
+## استخراج البيانات من المدخلات
 لما المستخدم يكتب مهمة جديدة، استخرج:
-- title: عبارة فعل قصيرة
-- due_datetime: حوّل الأوقات النسبية ("بكره"، "الأسبوع الجاي") لصيغة واضحة
-- priority: [urgent, high, medium, low] بناءً على الكلمات المفتاحية
+- title: عبارة فعل قصيرة ودقيقة
+- due_datetime: حوّل الأوقات النسبية لصيغة واضحة
+- priority: [urgent, high, medium, low] — ركّز على الكلمات المفتاحية التقنية
 - category: [work, personal, errands, calls, reading]
 
-كلمات الاستعجال بالعربي: عاجل، ضروري، النهارده، دلوقتي
-كلمات الاستعجال بالإنجليزي: urgent, ASAP, today, deadline
+كلمات الاستعجال: عاجل، ضروري، النهارده، دلوقتي، urgent, ASAP, today, deadline, critical, P0, P1
 
-لما المستخدم يسأل عن مهامه، لخصها بترتيب الأولوية:
-🔴 عالي / 🟡 متوسط / 🟢 عادي
+## صيغة الرد
+لما المستخدم يسأل عن مهامه، لخصها بأسلوب تقني:
+🔴 CRITICAL / 🟡 HIGH / 🟢 NORMAL / ⚪ LOW
 
-قواعد:
-- التواريخ: بصيغة مقروءة "الخميس 15 مايو الساعة 3 العصر"
-- متعرضش JSON أو IDs
-- التأكيدات: قصيرة "تمام، ضفت [title] ✓"
-- أقصى 3 إيموجي في الرد
-- أقصى اقتراح استباقي واحد في الرد`;
+استخدم صيغة تشبه terminal/log output:
+- "3 pending tasks | 1 overdue | 2 due today"
+- "TASK-001: [URGENT] Deploy security patch — ETA: 2h"
+
+## قواعد صارمة
+- التواريخ: ISO format + مقروءة "الخميس 15 مايو الساعة 3 العصر"
+- متعرضش JSON أو IDs للمستخدم
+- التأكيدات: "[OK] ضفت [title] ✓" أو "TASK CREATED: [title]"
+- أقصى 2 إيموجي في الرد
+- حلل المهام واقترح أولويات تقنية
+- لو مهمة تقنية محتاجة اهتمام فوري، نبّه المستخدم بوضوح
+- استخدم تنسيق شبه terminal حيث يناسب`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,21 +64,21 @@ export async function POST(request: NextRequest) {
       take: 20,
     });
 
-    const now = new Date();
     const taskContext = tasks
       .map((task) => {
         const daysUntil = computeDaysUntilDue(task.dueDatetime?.toISOString() || null);
         const dueStr = task.dueDatetime
           ? `Due: ${new Date(task.dueDatetime).toLocaleString()}`
           : 'No due date';
-        const daysStr = daysUntil !== null ? ` (${daysUntil} days remaining)` : '';
-        return `- [${task.priority.toUpperCase()}] ${task.title} | ${dueStr}${daysStr} | Category: ${task.category}`;
+        const daysStr = daysUntil !== null ? ` (${daysUntil}d remaining)` : '';
+        const overdueFlag = daysUntil !== null && daysUntil < 0 ? ' ⚠ OVERDUE' : '';
+        return `- [${task.priority.toUpperCase()}] ${task.title} | ${dueStr}${daysStr}${overdueFlag} | Cat: ${task.category} | Score: ${task.aiScore}`;
       })
       .join('\n');
 
     const contextMessage = taskContext
-      ? `\n\nCurrent user tasks (pending, sorted by priority):\n${taskContext}`
-      : '\n\nThe user currently has no pending tasks.';
+      ? `\n\n--- CURRENT TASK QUEUE (pending, sorted by priority score) ---\n${taskContext}\n--- END QUEUE ---`
+      : '\n\n[QUEUE EMPTY] No pending tasks.';
 
     // z-ai-web-dev-sdk uses 'assistant' role for system prompts
     const systemMessage = {
@@ -85,7 +101,7 @@ export async function POST(request: NextRequest) {
       thinking: { type: 'disabled' },
     });
 
-    const reply = completion.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+    const reply = completion.choices?.[0]?.message?.content || '[ERR] No response generated.';
 
     return NextResponse.json({ reply });
   } catch (error) {

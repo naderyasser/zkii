@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Terminal } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,8 @@ interface Message {
 
 const suggestions = [
   'إيه اللي عندي النهارده؟',
-  'أهم مهامي',
-  'فكّر معايا',
+  'أهم مهامي التقنية',
+  'حلّل مهامي',
 ];
 
 export default function ChatPanel() {
@@ -46,7 +46,6 @@ export default function ChatPanel() {
         content: data.reply || 'مفيش رد متاح دلوقتي.',
       };
       setMessages((prev) => [...prev, assistantMessage]);
-      // Invalidate tasks in case AI created/modified tasks
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['heatmap'] });
       queryClient.invalidateQueries({ queryKey: ['weekly-score'] });
@@ -54,7 +53,7 @@ export default function ChatPanel() {
     onError: () => {
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'حصل خطأ، حاول تاني 🙏',
+        content: '⚠ ERR: فشل الاتصال — حاول تاني',
       };
       setMessages((prev) => [...prev, errorMessage]);
     },
@@ -93,11 +92,12 @@ export default function ChatPanel() {
   }
 
   return (
-    <Card className="shadow-sm flex flex-col h-[500px] lg:h-full">
+    <Card className="border-border bg-card/60 backdrop-blur-sm flex flex-col h-[500px] lg:h-full">
       <CardHeader className="pb-2 shrink-0">
-        <CardTitle className="text-lg font-bold text-purple-800 flex items-center gap-2">
-          <Bot className="size-5 text-purple-500" />
+        <CardTitle className="text-lg font-bold text-neon neon-glow-subtle flex items-center gap-2">
+          <Terminal className="size-5" />
           زكي
+          <span className="text-[10px] font-mono text-muted-foreground font-normal ml-2">v2.0</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3 p-4 pt-0 overflow-hidden">
@@ -105,15 +105,15 @@ export default function ChatPanel() {
           <div className="flex flex-col gap-3 pb-2">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <div className="size-16 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Bot className="size-8 text-purple-500" />
+                <div className="size-16 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center neon-border-glow">
+                  <Bot className="size-8 text-neon" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-purple-800">
-                    أهلاً! أنا زكي 🧠
+                  <p className="text-sm font-medium text-neon neon-glow-subtle">
+                    أهلاً! أنا زكي ⚡
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    مساعدك الشخصي الذكي — اسألني عن مهامك
+                  <p className="text-xs text-muted-foreground mt-1 font-mono">
+                    {'>'} مساعدك التقني الذكي — جاهز للتنفيذ
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -122,7 +122,7 @@ export default function ChatPanel() {
                       key={s}
                       variant="outline"
                       size="sm"
-                      className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50"
+                      className="text-xs border-neon/30 text-neon hover:bg-neon/10 hover:text-neon"
                       onClick={() => handleSuggestion(s)}
                       disabled={chatMutation.isPending}
                     >
@@ -141,35 +141,35 @@ export default function ChatPanel() {
                     }`}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="size-6 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="size-3.5 text-purple-500" />
+                      <div className="size-6 rounded bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0 mt-1">
+                        <Bot className="size-3.5 text-neon" />
                       </div>
                     )}
                     <div
                       className={`max-w-[80%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                         msg.role === 'user'
-                          ? 'bg-muted text-foreground'
-                          : 'bg-purple-50 text-purple-900 border border-purple-100'
+                          ? 'bg-surface-alt text-slate-200 border border-border'
+                          : 'bg-neon/5 text-slate-200 border border-neon/20'
                       }`}
                     >
-                      {msg.content}
+                      <span className="font-mono whitespace-pre-wrap">{msg.content}</span>
                     </div>
                     {msg.role === 'user' && (
-                      <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0 mt-1">
-                        <User className="size-3.5 text-gray-500" />
+                      <div className="size-6 rounded bg-surface-alt border border-border flex items-center justify-center shrink-0 mt-1">
+                        <User className="size-3.5 text-muted-foreground" />
                       </div>
                     )}
                   </div>
                 ))}
                 {isTyping && (
                   <div className="flex gap-2 justify-start">
-                    <div className="size-6 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-1">
-                      <Bot className="size-3.5 text-purple-500" />
+                    <div className="size-6 rounded bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0 mt-1">
+                      <Bot className="size-3.5 text-neon" />
                     </div>
-                    <div className="bg-purple-50 border border-purple-100 rounded-xl px-4 py-2.5 flex items-center gap-1">
-                      <span className="size-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:0ms]" />
-                      <span className="size-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:150ms]" />
-                      <span className="size-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:300ms]" />
+                    <div className="bg-neon/5 border border-neon/20 rounded-xl px-4 py-2.5 flex items-center gap-1">
+                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:0ms]" />
+                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:150ms]" />
+                      <span className="size-1.5 rounded-full bg-neon animate-bounce [animation-delay:300ms]" />
                     </div>
                   </div>
                 )}
@@ -185,13 +185,13 @@ export default function ChatPanel() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="اكتب هنا..."
-            className="flex-1"
+            placeholder="اكتب أمر هنا..."
+            className="flex-1 bg-surface-alt border-border text-slate-200 placeholder:text-muted-foreground focus:border-neon/50 focus:ring-neon/20"
             disabled={chatMutation.isPending}
           />
           <Button
             size="icon"
-            className="bg-purple-600 hover:bg-purple-700 text-white shrink-0"
+            className="bg-neon hover:bg-neon-dim text-background shrink-0"
             onClick={handleSend}
             disabled={!input.trim() || chatMutation.isPending}
           >

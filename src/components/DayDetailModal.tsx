@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { X, CheckCircle2, Circle, Loader2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, Sparkles, Terminal } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -90,9 +90,10 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-purple-800">
+          <DialogTitle className="text-neon neon-glow-subtle flex items-center gap-2">
+            <Terminal className="size-4" />
             {date ? formatDateAr(date) : ''}
           </DialogTitle>
         </DialogHeader>
@@ -100,28 +101,28 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <Loader2 className="size-6 animate-spin" />
-              <span className="text-sm">جاري التحميل...</span>
+              <Loader2 className="size-6 animate-spin text-neon" />
+              <span className="text-sm font-mono">{'>'} loading day data...</span>
             </div>
           </div>
         ) : dayDetail ? (
           <div className="flex flex-col gap-4 overflow-y-auto">
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-                <span className="text-2xl font-bold text-purple-700">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-surface-alt border border-border">
+                <span className="text-2xl font-bold text-neon font-mono">
                   {dayDetail.totalTasks}
                 </span>
                 <span className="text-[10px] text-muted-foreground">إجمالي المهام</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-emerald-50">
-                <span className="text-2xl font-bold text-emerald-600">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-neon/5 border border-neon/20">
+                <span className="text-2xl font-bold text-neon font-mono">
                   {dayDetail.completedTasks}
                 </span>
                 <span className="text-[10px] text-muted-foreground">مكتملة</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-purple-50">
-                <span className="text-2xl font-bold text-purple-600">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-cyber-pink/5 border border-cyber-pink/20">
+                <span className="text-2xl font-bold text-cyber-pink font-mono">
                   {Math.round(dayDetail.productivityScore)}%
                 </span>
                 <span className="text-[10px] text-muted-foreground">الإنتاجية</span>
@@ -130,26 +131,26 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
 
             <Progress
               value={dayDetail.productivityScore}
-              className="h-2"
+              className="h-2 [&>div]:bg-neon"
             />
 
             {/* AI Summary */}
             {dayDetail.summary ? (
-              <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+              <div className="p-4 rounded-lg bg-neon/5 border border-neon/20">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Sparkles className="size-4 text-purple-500" />
-                  <span className="text-sm font-semibold text-purple-700">
-                    ملخص زكي
+                  <Sparkles className="size-4 text-neon" />
+                  <span className="text-sm font-semibold text-neon">
+                    تحليل زكي
                   </span>
                 </div>
-                <p className="text-sm text-purple-900 leading-relaxed">
+                <p className="text-sm text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
                   {dayDetail.summary}
                 </p>
               </div>
             ) : (
               <Button
                 variant="outline"
-                className="w-full border-purple-200 text-purple-600 hover:bg-purple-50 gap-1.5"
+                className="w-full border-neon/30 text-neon hover:bg-neon/10 gap-1.5"
                 onClick={() => {
                   if (date) generateSummaryMutation.mutate(date);
                 }}
@@ -158,12 +159,12 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
                 {generateSummaryMutation.isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    جاري توليد الملخص...
+                    جاري التحليل...
                   </>
                 ) : (
                   <>
                     <Sparkles className="size-4" />
-                    ولّد ملخص بالذكاء الاصطناعي
+                    {'> analyze --day '}{date}
                   </>
                 )}
               </Button>
@@ -172,37 +173,37 @@ export default function DayDetailModal({ date, open, onOpenChange }: DayDetailMo
             {/* Tasks list */}
             {dayDetail.tasks.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">
-                  المهام
+                <span className="text-xs font-medium text-muted-foreground font-mono">
+                  {'// المهام'}
                 </span>
                 <ScrollArea className="max-h-60">
                   <div className="flex flex-col gap-1.5">
                     {dayDetail.tasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center gap-2 p-2 rounded-md border bg-card"
+                        className="flex items-center gap-2 p-2 rounded-md border border-border bg-surface-alt/50"
                       >
                         {task.status === 'done' ? (
-                          <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                          <CheckCircle2 className="size-4 text-neon shrink-0" />
                         ) : (
                           <Circle className="size-4 text-muted-foreground shrink-0" />
                         )}
                         <span
-                          className={`text-sm flex-1 ${
+                          className={`text-sm flex-1 font-mono ${
                             task.status === 'done'
                               ? 'line-through text-muted-foreground'
-                              : ''
+                              : 'text-slate-300'
                           }`}
                         >
                           {task.title}
                         </span>
                         <Badge
                           variant="outline"
-                          className="text-[9px] px-1 py-0 h-4"
+                          className="text-[9px] px-1 py-0 h-4 border-border text-muted-foreground"
                         >
                           {categoryLabels[task.category] || task.category}
                         </Badge>
-                        <span className="text-[9px] text-muted-foreground">
+                        <span className="text-[9px] text-muted-foreground font-mono">
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                       </div>

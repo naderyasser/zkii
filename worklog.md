@@ -66,3 +66,29 @@ Stage Summary:
 - All 8 frontend components are built and integrated
 - LLM integration uses z-ai-web-dev-sdk correctly with 'assistant' role for system prompts
 - Application is fully functional with RTL Arabic UI, Cairo font, and purple accent colors
+
+---
+Task ID: 4
+Agent: Main Orchestrator
+Task: Implement Cyberpunk Dark Mode + Technical AI Persona
+
+Work Log:
+- Updated globals.css: Complete dark theme with cyberpunk CSS variables (neon green #00ff88, cyber pink #ff00aa, cyber yellow #ffe600), custom neon-glow utilities, scanline overlay, dark scrollbars
+- Updated layout.tsx: Added `className="dark"` to html, JetBrains Mono for monospace, dark body
+- Updated page.tsx: Dark background with scanline overlay, neon header with Terminal icon, cyberpunk branding
+- Updated TaskList.tsx: Neon green accents, dark card backgrounds, terminal-style empty states, neon category badges, dark delete confirmation
+- Updated ChatPanel.tsx: Terminal aesthetic, neon green bot icons, monospace message content, dark input styling, technical suggestion chips
+- Updated YearlyHeatmap.tsx: Neon green heatmap levels (0-4 opacity), dark cell backgrounds, neon ring on today, dark tooltips
+- Updated WeeklyScore.tsx: Neon green progress ring with glow, dark card, Cpu icon, monospace percentages
+- Updated DayDetailModal.tsx: Dark dialog, neon stat cards, terminal-style task list, neon AI summary section
+- Updated AddTaskDialog.tsx: Dark dialog, neon green accent button, dark form inputs, terminal-style expand button
+- Updated /api/chat/route.ts: Technical developer persona system prompt, infrastructure/security task prioritization, terminal-style response format
+- Updated /api/chat/generate-day-summary/route.ts: Analytical/log-style summary format, technical language, DAY ANALYSIS format
+
+Stage Summary:
+- Complete Cyberpunk/Hacker dark theme with neon green (#00ff88) as primary accent
+- All 8 components restyled for dark mode with high-contrast neon colors
+- Custom CSS utilities: neon-glow, neon-border-glow, cyber-scanline
+- AI persona upgraded to v2.0 — technical, developer-focused, terminal-style output
+- Technical task recognition: infrastructure=urgent, security=urgent, server=high, backend=high
+- Lint passes clean, all API endpoints return 200

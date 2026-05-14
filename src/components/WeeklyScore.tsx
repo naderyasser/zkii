@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Cpu } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface WeeklyScoreData {
@@ -26,7 +26,7 @@ export default function WeeklyScore() {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <Card className="border-purple-200 bg-gradient-to-bl from-purple-50 to-white shadow-sm">
+    <Card className="border-neon/20 bg-card/60 backdrop-blur-sm neon-border-glow">
       <CardContent className="p-4 flex items-center gap-4">
         <div className="relative w-20 h-20 shrink-0">
           <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
@@ -37,7 +37,7 @@ export default function WeeklyScore() {
               fill="none"
               stroke="currentColor"
               strokeWidth="6"
-              className="text-purple-100"
+              className="text-neon/10"
             />
             <circle
               cx="40"
@@ -49,24 +49,28 @@ export default function WeeklyScore() {
               strokeDasharray={circumference}
               strokeDashoffset={offset}
               strokeLinecap="round"
-              className="text-purple-600 transition-all duration-700"
+              className="text-neon transition-all duration-700"
+              style={{ filter: 'drop-shadow(0 0 6px rgba(0, 255, 136, 0.5))' }}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-bold text-purple-700">
+            <span className="text-lg font-bold text-neon neon-glow-subtle font-mono">
               {isLoading ? '...' : `${Math.round(score)}%`}
             </span>
           </div>
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-semibold text-purple-800">نتيجة الأسبوع</span>
+          <span className="text-sm font-semibold text-neon flex items-center gap-1.5">
+            <Cpu className="size-3.5" />
+            نتيجة الأسبوع
+          </span>
           {data && (
             <div className="flex items-center gap-1.5 text-xs">
               {data.direction === 'up' && (
-                <TrendingUp className="size-4 text-emerald-600" />
+                <TrendingUp className="size-4 text-neon" />
               )}
               {data.direction === 'down' && (
-                <TrendingDown className="size-4 text-amber-500" />
+                <TrendingDown className="size-4 text-cyber-yellow" />
               )}
               {data.direction === 'same' && (
                 <Minus className="size-4 text-muted-foreground" />
@@ -74,9 +78,9 @@ export default function WeeklyScore() {
               <span
                 className={
                   data.direction === 'up'
-                    ? 'text-emerald-600 font-medium'
+                    ? 'text-neon font-medium font-mono'
                     : data.direction === 'down'
-                      ? 'text-amber-500 font-medium'
+                      ? 'text-cyber-yellow font-medium font-mono'
                       : 'text-muted-foreground'
                 }
               >
@@ -90,7 +94,7 @@ export default function WeeklyScore() {
             </div>
           )}
           {isLoading && (
-            <span className="text-xs text-muted-foreground">جاري التحميل...</span>
+            <span className="text-xs text-muted-foreground font-mono">{'>'} loading...</span>
           )}
         </div>
       </CardContent>

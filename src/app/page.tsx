@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import WeeklyScore from '@/components/WeeklyScore';
 import TaskList from '@/components/TaskList';
 import YearlyHeatmap from '@/components/YearlyHeatmap';
@@ -18,17 +18,17 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 to-white">
+    <div className="min-h-screen flex flex-col bg-background cyber-scanline">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-purple-600 flex items-center justify-center">
-              <Sparkles className="size-5 text-white" />
+            <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center neon-border-glow">
+              <Terminal className="size-5 text-neon" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-purple-800">زكي</h1>
-              <p className="text-[11px] text-purple-500 -mt-0.5">مساعدك الشخصي الذكي</p>
+              <h1 className="text-xl font-bold text-neon neon-glow-subtle tracking-wide">زكي</h1>
+              <p className="text-[11px] text-muted-foreground font-mono -mt-0.5">v2.0 // مساعدك التقني الذكي</p>
             </div>
           </div>
           <WeeklyScore />

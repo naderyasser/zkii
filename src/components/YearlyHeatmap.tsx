@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Tooltip,
@@ -28,12 +29,13 @@ const arabicMonthNames = [
 
 const arabicDayAbbr = ['س', 'ر', 'خ', 'ج', 'ن', 'ث', ''];
 
+// Cyberpunk neon-green heatmap levels
 const levelColors: Record<number, string> = {
-  0: 'bg-gray-100 dark:bg-gray-800',
-  1: 'bg-emerald-100 dark:bg-emerald-900',
-  2: 'bg-emerald-300 dark:bg-emerald-700',
-  3: 'bg-emerald-500 dark:bg-emerald-500',
-  4: 'bg-emerald-700 dark:bg-emerald-300',
+  0: 'bg-slate-800/50',
+  1: 'bg-neon/10',
+  2: 'bg-neon/25',
+  3: 'bg-neon/50',
+  4: 'bg-neon/80',
 };
 
 export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
@@ -67,13 +69,10 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
     const firstDay = new Date(year, 0, 1);
     const lastDay = new Date(year, 11, 31);
 
-    // Build weeks (columns) × days (rows) grid
     const weeks: { date: string; level: number; total: number; done: number; month: number }[][] = [];
     let currentWeek: { date: string; level: number; total: number; done: number; month: number }[] = [];
 
-    // Pad the first week with empty days
-    const startDow = firstDay.getDay(); // 0=Sun
-    // We want Monday as first day of week (index 0)
+    const startDow = firstDay.getDay();
     const mondayOffset = startDow === 0 ? 6 : startDow - 1;
     for (let i = 0; i < mondayOffset; i++) {
       currentWeek.push({ date: '', level: -1, total: 0, done: 0, month: -1 });
@@ -98,7 +97,6 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
       d.setDate(d.getDate() + 1);
     }
 
-    // Pad the last week
     if (currentWeek.length > 0) {
       while (currentWeek.length < 7) {
         currentWeek.push({ date: '', level: -1, total: 0, done: 0, month: -1 });
@@ -109,12 +107,10 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
     return weeks;
   }, [currentYear, heatmapMap]);
 
-  // Determine which week index each month label should appear at
   const monthLabels = useMemo(() => {
     const labels: { weekIdx: number; label: string }[] = [];
     let lastMonth = -1;
     for (let w = 0; w < grid.length; w++) {
-      // Find the first non-empty day in this week
       for (let d = 0; d < 7; d++) {
         if (grid[w][d].month >= 0 && grid[w][d].month !== lastMonth) {
           lastMonth = grid[w][d].month;
@@ -127,10 +123,12 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
   }, [grid]);
 
   return (
-    <Card className="shadow-sm">
+    <Card className="border-border bg-card/60 backdrop-blur-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-bold text-purple-800">
+        <CardTitle className="text-lg font-bold text-neon neon-glow-subtle flex items-center gap-2">
+          <Activity className="size-4" />
           خريطة النشاط
+          <span className="text-[10px] font-mono text-muted-foreground font-normal">{currentYear}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
@@ -155,7 +153,7 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
               {/* Grid: 7 rows (days) × N columns (weeks) */}
               {Array.from({ length: 7 }).map((_, dayIdx) => (
                 <div key={dayIdx} className="flex gap-0.5 items-center">
-                  <span className="w-6 text-[9px] text-muted-foreground text-left shrink-0">
+                  <span className="w-6 text-[9px] text-muted-foreground text-left shrink-0 font-mono">
                     {arabicDayAbbr[dayIdx]}
                   </span>
                   {grid.map((week, wIdx) => {
@@ -176,16 +174,16 @@ export default function YearlyHeatmap({ onDayClick }: YearlyHeatmapProps) {
                           <button
                             className={`w-[11px] h-[11px] rounded-[2px] transition-all ${
                               levelColors[cell.level] || levelColors[0]
-                            } ${isToday ? 'ring-2 ring-purple-400 ring-offset-1' : ''} ${
-                              isHovered ? 'scale-125' : ''
+                            } ${isToday ? 'ring-2 ring-neon ring-offset-1 ring-offset-card' : ''} ${
+                              isHovered ? 'scale-125 shadow-[0_0_6px_rgba(0,255,136,0.5)]' : ''
                             } hover:scale-110 cursor-pointer`}
                             onClick={() => onDayClick(cell.date)}
                             onMouseEnter={() => setHoveredCell(cell.date)}
                             onMouseLeave={() => setHoveredCell(null)}
                           />
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          <span>
+                        <TooltipContent side="top" className="text-xs bg-card border-border text-slate-200">
+                          <span className="font-mono">
                             {cell.date} — {cell.done}/{cell.total} مهمة
                           </span>
                         </TooltipContent>

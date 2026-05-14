@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -99,20 +99,24 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-purple-800">مهمة جديدة</DialogTitle>
-          <DialogDescription>أضف مهمة جديدة لقائمتك</DialogDescription>
+          <DialogTitle className="text-neon neon-glow-subtle flex items-center gap-2">
+            <Plus className="size-4" />
+            مهمة جديدة
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground font-mono">{'$ add-task'}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="task-title">عنوان المهمة *</Label>
+            <Label htmlFor="task-title" className="text-slate-300">عنوان المهمة *</Label>
             <Input
               id="task-title"
-              placeholder="مثلاً: إنهاز التقرير"
+              placeholder="مثلاً: إنهاء التقرير"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
+              className="bg-surface-alt border-border text-slate-200 placeholder:text-muted-foreground focus:border-neon/50 focus:ring-neon/20"
             />
           </div>
 
@@ -121,34 +125,35 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
               type="button"
               variant="ghost"
               size="sm"
-              className="self-start text-purple-600 hover:text-purple-700 text-xs"
+              className="self-start text-neon hover:text-neon hover:bg-neon/10 text-xs font-mono"
               onClick={() => setShowDetails(true)}
             >
-              خيارات أكتر ▾
+              {'> خيارات أكتر'}
             </Button>
           ) : (
             <>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="task-notes">ملاحظات</Label>
+                <Label htmlFor="task-notes" className="text-slate-300">ملاحظات</Label>
                 <Textarea
                   id="task-notes"
                   placeholder="أضف ملاحظات..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
+                  className="bg-surface-alt border-border text-slate-200 placeholder:text-muted-foreground focus:border-neon/50 focus:ring-neon/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label>التصنيف</Label>
+                  <Label className="text-slate-300">التصنيف</Label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-surface-alt border-border text-slate-200">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card border-border">
                       {categories.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
+                        <SelectItem key={c.value} value={c.value} className="text-slate-200 focus:bg-neon/10 focus:text-neon">
                           {c.label}
                         </SelectItem>
                       ))}
@@ -156,14 +161,14 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
                   </Select>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label>الأولوية</Label>
+                  <Label className="text-slate-300">الأولوية</Label>
                   <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-surface-alt border-border text-slate-200">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card border-border">
                       {priorities.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
+                        <SelectItem key={p.value} value={p.value} className="text-slate-200 focus:bg-neon/10 focus:text-neon">
                           {p.label}
                         </SelectItem>
                       ))}
@@ -173,12 +178,13 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="task-due">تاريخ الاستحقاق</Label>
+                <Label htmlFor="task-due" className="text-slate-300">تاريخ الاستحقاق</Label>
                 <Input
                   id="task-due"
                   type="datetime-local"
                   value={dueDatetime}
                   onChange={(e) => setDueDatetime(e.target.value)}
+                  className="bg-surface-alt border-border text-slate-200 focus:border-neon/50 focus:ring-neon/20"
                 />
               </div>
             </>
@@ -186,7 +192,7 @@ export default function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps
 
           <Button
             type="submit"
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-neon hover:bg-neon-dim text-background font-semibold"
             disabled={!title.trim() || createMutation.isPending}
           >
             {createMutation.isPending ? (

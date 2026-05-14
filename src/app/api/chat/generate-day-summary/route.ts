@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const completedTasks = tasks.filter((t) => t.status === 'done').length;
     const productivityScore = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
-    // Build a summary of the day's tasks for the LLM
+    // Build a summary of the day's tasks for the LLM — technical log format
     const taskSummary = tasks
       .map((task) => {
         const status = task.status === 'done' ? '✅' : '⏳';
@@ -45,11 +45,14 @@ export async function POST(request: NextRequest) {
     const promptMessages = [
       {
         role: 'assistant' as const,
-        content: `أنت زكي — مساعد شخصي ذكي للإنتاجية. مهمتك تكتب ملخص يومي مختصر ودافئ عن إنتاجية المستخدم. تكلم بنفس لغة المستخدم. كن مختصر ومحفز. استخدم إيموجي واحدة فقط. اكتب 2-3 جمل فقط.`,
+        content: `أنت زكي v2.0 — مساعد تقني ذكي للإنتاجية. مهمتك تكتب تحليل يومي مختصر ودقيق عن إنتاجية المستخدم. تستخدم لغة تحليلية شبه تقنية — زي log output أو terminal summary. تكلم بنفس لغة المستخدم. كن مختصر وموضوعي. اكتب 2-3 سطور فقط. استخدم تنسيق: "DAY ANALYSIS | date | stats | highlights"
+
+مثال:
+"DAY ANALYSIS | 2026-05-14 | 5/8 tasks completed (62.5%) | ⚡ 2 urgent items resolved — security patch + DB migration. ⏳ 3 pending: API refactor, code review, deploy staging"`,
       },
       {
         role: 'user' as const,
-        content: `اكتب ملخص ليوم ${date}. المهام:\n${taskSummary || 'لا توجد مهام لهذا اليوم.'}\n\nالإحصائيات: ${completedTasks}/${totalTasks} مهام مكتملة (${productivityScore.toFixed(0)}% إنتاجية)`,
+        content: `حلّل يوم ${date}. المهام:\n${taskSummary || '[NO TASKS] Empty queue for this day.'}\n\nالإحصائيات: ${completedTasks}/${totalTasks} مكتملة (${productivityScore.toFixed(0)}% إنتاجية)`,
       },
     ];
 
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
     });
 
     const summary =
-      completion.choices?.[0]?.message?.content || `ملخص يوم ${date}: ${completedTasks}/${totalTasks} مهام مكتملة`;
+      completion.choices?.[0]?.message?.content || `DAY ANALYSIS | ${date} | ${completedTasks}/${totalTasks} completed (${productivityScore.toFixed(0)}%)`;
 
     // Get or create DayLog and update it
     let dayLog = await db.dayLog.findUnique({
