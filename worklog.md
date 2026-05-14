@@ -205,3 +205,44 @@ Stage Summary:
 - ChatPanel shows real-time agent phase indicators (thinking/executing/responding)
 - "زكي بيحدّث قاعدة البيانات..." visual feedback during tool execution
 - Strict React Query invalidation + refetch for instant UI sync
+
+---
+Task ID: 8
+Agent: Main Orchestrator
+Task: Phase 3 — Google OAuth2 Integration (Gmail + Calendar)
+
+Work Log:
+- Installed googleapis@171.4.0 package
+- Updated .env with GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI placeholders
+- Added OAuthConfig model to Prisma schema (userId, provider, accessToken, refreshToken, expiryDate, scopes)
+- Added oAuthConfigs relation to User model
+- Ran prisma db push + prisma generate to sync schema
+- Created /api/auth/google/login/route.ts: Generates Google authorization URL with Gmail readonly + Calendar events readonly scopes, access_type=offline, prompt=consent
+- Created /api/auth/google/callback/route.ts: Exchanges auth code for tokens, upserts into OAuthConfig model, redirects back to app with success/error params
+- Created /api/auth/google/disconnect/route.ts: Revokes token at Google + deletes OAuthConfig record from DB
+- Created src/lib/googleApi.ts with full service library:
+  - getAuthenticatedClient(): Retrieves tokens from Prisma, auto-refreshes expired access tokens, updates DB with new tokens
+  - getOAuthStatus(): Returns connection status, scopes, expiry info
+  - GmailService.scanInbox(query, maxResults): Gmail API message list + metadata fetch (from, subject, date, snippet)
+  - GmailService.getMessage(id): Full email body extraction with base64 decoding
+  - CalendarService.getTodayEvents(): Today's calendar events with attendees, location, time
+  - CalendarService.getEventsByRange(start, end): Arbitrary date range events
+- Created /api/integrations/status/route.ts: GET endpoint returning OAuth status
+- Created /api/integrations/test/gmail/route.ts: Test endpoint calling GmailService.scanInbox
+- Created /api/integrations/test/calendar/route.ts: Test endpoint calling CalendarService.getTodayEvents
+- Created src/components/IntegrationsPanel.tsx: Collapsible UI widget showing Google connection status, connect/disconnect buttons, Gmail/Calendar test buttons with results display
+- Updated src/app/page.tsx: Integrated IntegrationsPanel next to tab switcher, added OAuth callback toast notifications (success/error), version bumped to v3.0
+- Verified all endpoints: status → 200 ✓, login → 500 (no creds) ✓, gmail test → 401 (not connected) ✓, calendar test → 401 (not connected) ✓
+- Lint passes clean
+
+Stage Summary:
+- Complete Google OAuth2 flow implemented: login → consent → callback → token storage
+- OAuthConfig Prisma model stores access_token, refresh_token, expiry_date, scopes per user
+- Automatic token refresh: expired access tokens are refreshed transparently before API calls
+- GmailService: inbox scanning with query support + full message body extraction
+- CalendarService: today's events + date range queries with attendee/location data
+- Disconnect endpoint: revokes Google tokens + cleans up DB
+- IntegrationsPanel UI: collapsible widget with connection status, connect/disconnect, test buttons
+- OAuth callback redirects show toast notifications (success/error) on return
+- All endpoints return proper error responses when Google not configured/connected
+- ⚠️ User must provide GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env before testing OAuth flow

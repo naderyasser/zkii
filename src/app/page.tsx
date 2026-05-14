@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Terminal, PanelRightOpen, PanelRightClose, Activity, ListTodo } from 'lucide-react';
 import WeeklyScore from '@/components/WeeklyScore';
 import TaskList from '@/components/TaskList';
@@ -8,8 +8,10 @@ import YearlyHeatmap from '@/components/YearlyHeatmap';
 import ChatPanel from '@/components/ChatPanel';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import DayDetailModal from '@/components/DayDetailModal';
+import IntegrationsPanel from '@/components/IntegrationsPanel';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 type MainTab = 'tasks' | 'heatmap';
 
@@ -18,6 +20,40 @@ export default function Home() {
   const [dayDetailOpen, setDayDetailOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [mainTab, setMainTab] = useState<MainTab>('tasks');
+  const { toast } = useToast();
+
+  // ─── Handle OAuth callback redirects ──────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthSuccess = params.get('oauth_success');
+    const oauthError = params.get('oauth_error');
+
+    if (oauthSuccess === 'google') {
+      toast({
+        title: 'تم ربط Google ✓',
+        description: 'حساب Google متصل بنجاح — تقدر تستخدم Gmail و Calendar دلوقتي',
+        variant: 'default',
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+
+    if (oauthError) {
+      const errorMessages: Record<string, string> = {
+        access_denied: 'تم رفض الوصول — محتاج تسمح بالأذونات',
+        no_code: 'لم يتم استلام كود التفويض',
+        missing_tokens: 'لم يتم استلام التوكنز من Google',
+        token_exchange_failed: 'فشل تبادل الكود — حاول تاني',
+      };
+      toast({
+        title: 'فشل ربط Google',
+        description: errorMessages[oauthError] || `خطأ: ${oauthError}`,
+        variant: 'destructive',
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, [toast]);
 
   function handleDayClick(date: string) {
     setSelectedDate(date);
@@ -35,7 +71,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-accent-brand dark:neon-glow-subtle tracking-wide">زكي</h1>
-              <p className="text-[10px] text-muted-foreground font-mono -mt-0.5">v2.0 // مساعدك التقني الذكي</p>
+              <p className="text-[10px] text-muted-foreground font-mono -mt-0.5">v3.0 // مساعدك التقني الذكي + Google</p>
             </div>
           </div>
 
@@ -67,34 +103,41 @@ export default function Home() {
             {/* Pomodoro Pill Widget */}
             <PomodoroTimer />
 
-            {/* Tab switcher */}
-            <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-alt border border-border w-fit">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-xs h-7 px-3 rounded-md transition-all ${
-                  mainTab === 'tasks'
-                    ? 'bg-card text-accent-brand shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setMainTab('tasks')}
-              >
-                <ListTodo className="size-3.5 ml-1.5" />
-                المهام
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-xs h-7 px-3 rounded-md transition-all ${
-                  mainTab === 'heatmap'
-                    ? 'bg-card text-accent-brand shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setMainTab('heatmap')}
-              >
-                <Activity className="size-3.5 ml-1.5" />
-                خريطة النشاط
-              </Button>
+            {/* Tab switcher + Integrations */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-alt border border-border w-fit">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`text-xs h-7 px-3 rounded-md transition-all ${
+                    mainTab === 'tasks'
+                      ? 'bg-card text-accent-brand shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setMainTab('tasks')}
+                >
+                  <ListTodo className="size-3.5 ml-1.5" />
+                  المهام
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`text-xs h-7 px-3 rounded-md transition-all ${
+                    mainTab === 'heatmap'
+                      ? 'bg-card text-accent-brand shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setMainTab('heatmap')}
+                >
+                  <Activity className="size-3.5 ml-1.5" />
+                  خريطة النشاط
+                </Button>
+              </div>
+
+              {/* Google Integration mini-widget */}
+              <div className="flex-1 min-w-[200px] max-w-[320px]">
+                <IntegrationsPanel />
+              </div>
             </div>
 
             {/* Main content */}

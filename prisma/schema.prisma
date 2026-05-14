@@ -19,6 +19,7 @@ model User {
   tasks     Task[]
   dayLogs   DayLog[]
   emailSuggestions EmailSuggestion[]
+  oAuthConfigs OAuthConfig[]
 }
 
 model Task {
@@ -86,4 +87,22 @@ model EmailSuggestion {
   suggestedPriority String @default("medium")
   confirmed        Boolean? // null=pending, true=accepted, false=rejected
   createdAt        DateTime @default(now())
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Google OAuth2 Token Storage — Single-user model
+// Stores access_token, refresh_token, and metadata for the
+// system user so Gmail/Calendar API calls can be made server-side.
+// ═══════════════════════════════════════════════════════════════
+model OAuthConfig {
+  id           String   @id @default(cuid())
+  userId       String   @unique  // Links to the single system user
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   @default("google")  // OAuth provider name (future-proof)
+  accessToken  String   // Encrypted in production; plain for dev
+  refreshToken String   // Required for offline access
+  expiryDate   DateTime? // When the access_token expires
+  scopes       String   @default("") // Comma-separated granted scopes
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
