@@ -1,19 +1,34 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Mail, Calendar, Link2, Unlink, ExternalLink, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import * as api from '@/lib/api';
 import type { OAuthStatus } from '@/types';
 
 export default function IntegrationsPanel() {
+  const queryClient = useQueryClient();
   const { data: oauthStatus, isLoading } = useQuery<OAuthStatus>({
     queryKey: ['oauth-status'],
-    queryFn: api.getOAuthStatus,
+    queryFn: async () => {
+      const res = await fetch('/api/integrations/status');
+      if (!res.ok) throw new Error('Failed');
+      return res.json();
+    },
     refetchInterval: 30000,
   });
 
   const isConnected = oauthStatus?.connected ?? false;
+
+  async function handleDisconnect() {
+    try {
+      const res = await fetch('/api/auth/google/disconnect', { method: 'POST' });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['oauth-status'] });
+      }
+    } catch (err) {
+      console.error('Disconnect failed:', err);
+    }
+  }
 
   return (
     <div className="rounded-[10px] bg-surface border border-border-subtle overflow-hidden">
@@ -63,8 +78,8 @@ export default function IntegrationsPanel() {
           </div>
 
           {isConnected ? (
-            <a
-              href="/api/auth/google/disconnect"
+            <button
+              onClick={handleDisconnect}
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5',
                 'rounded-md text-[11px] font-medium',
@@ -75,7 +90,7 @@ export default function IntegrationsPanel() {
             >
               <Unlink className="size-3" />
               فصل
-            </a>
+            </button>
           ) : (
             <a
               href="/api/auth/google/login"

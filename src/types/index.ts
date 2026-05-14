@@ -1,3 +1,12 @@
+/* ─── Tag ──────────────────────────────────────────────── */
+export interface Tag {
+  id: string;
+  userId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
 /* ─── Task ──────────────────────────────────────────────── */
 export interface Task {
   id: string;
@@ -20,8 +29,8 @@ export interface Task {
 
 export type TaskCategory = 'work' | 'personal' | 'errands' | 'calls' | 'reading';
 export type TaskPriority = 'urgent' | 'high' | 'medium' | 'low';
-export type TaskStatus = 'pending' | 'done';
-export type TaskSource = 'manual' | 'chat' | 'email';
+export type TaskStatus = 'pending' | 'done' | 'cancelled';
+export type TaskSource = 'manual' | 'chat' | 'email' | 'ai';
 export type PressureLevel = 'chill' | 'normal' | 'urgent' | 'overdue';
 
 /* ─── Chat ─────────────────────────────────────────────── */

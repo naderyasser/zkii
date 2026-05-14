@@ -1,4 +1,6 @@
-const DEFAULT_USER_ID = 'default-user';
+import { DEFAULT_USER_ID } from './task-utils';
+
+export { DEFAULT_USER_ID };
 
 export function getActiveToken(): string | null {
   if (typeof window === 'undefined') return null;

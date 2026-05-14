@@ -12,7 +12,7 @@ import { GmailService, CalendarService, getOAuthStatus } from '@/lib/googleApi';
 // ═══════════════════════════════════════════════════════════════════════════════
 // TOOL DEFINITIONS (OpenAI-compatible format)
 // ═══════════════════════════════════════════════════════════════════════════════
-// 7 tools: 5 task management + 2 Google integration (Gmail + Calendar)
+// 8 tools: 5 task management + 1 web search + 2 Google integration (Gmail + Calendar)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const TOOLS = [
@@ -131,6 +131,31 @@ const TOOLS = [
           },
         },
         required: ['updates', 'summary'],
+      },
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WEB SEARCH TOOL
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    type: 'function',
+    function: {
+      name: 'web_search',
+      description:
+        'Search the web for current information, news, facts, or any topic. Use when the user asks about something that requires up-to-date information, recent news, current events, or facts you are not certain about.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Search query string. Be specific for better results.',
+          },
+          num: {
+            type: 'number',
+            description: 'Number of results to return. Default: 5. Max: 10.',
+          },
+        },
+        required: ['query'],
       },
     },
   },
@@ -398,6 +423,66 @@ async function executeTool(
       }
 
       // ═══════════════════════════════════════════════════════════════════════
+      // WEB SEARCH — Search the internet for current information
+      // ═══════════════════════════════════════════════════════════════════════
+      case 'web_search': {
+        const query = (args.query as string) || '';
+        if (!query.trim()) {
+          return { tool: 'web_search', status: 'error', message: 'Search query is required' };
+        }
+        const num = Math.min((args.num as number) || 5, 10);
+
+        try {
+          const zai = await ZAI.create();
+          const rawResults = await zai.functions.invoke('web_search', {
+            query,
+            num,
+          });
+
+          const searchResults = (rawResults as Array<{
+            name: string;
+            url: string;
+            snippet: string;
+            host_name: string;
+            date: string;
+          }>).map((r) => ({
+            title: r.name,
+            url: r.url,
+            snippet: r.snippet,
+            source: r.host_name,
+            date: r.date,
+          }));
+
+          if (searchResults.length === 0) {
+            return {
+              tool: 'web_search',
+              status: 'success',
+              message: `No results found for: "${query}"`,
+              data: { query, count: 0, results: [] },
+            };
+          }
+
+          return {
+            tool: 'web_search',
+            status: 'success',
+            message: `Found ${searchResults.length} result(s) for: "${query}"`,
+            data: {
+              query,
+              count: searchResults.length,
+              results: searchResults,
+            },
+          };
+        } catch (searchError) {
+          const errMsg = searchError instanceof Error ? searchError.message : 'Unknown search error';
+          return {
+            tool: 'web_search',
+            status: 'error',
+            message: `Web search failed: ${errMsg}`,
+          };
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
       // GOOGLE INTEGRATION — Gmail & Calendar Tool Execution
       // ═══════════════════════════════════════════════════════════════════════
 
@@ -533,9 +618,9 @@ async function executeTool(
 // SYSTEM PROMPT — Context-Aware Agent Persona v3.0
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ZAKI_SYSTEM_PROMPT = `أنت زكي v3.0 — مساعد تقني ذكي للإنتاجية مع قدرات تنفيذية كاملة + تكامل مع Google (Gmail + Calendar). تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، تحليلي، و تقني — زي terminal ذكي. أنت مش مجرد شات بوت — أنت Agent حقيقي يقدر يشوف قاعدة البيانات، يقرأ الإيميلات، يشوف المواعيد، وينفذ أوامر.
+const ZAKI_SYSTEM_PROMPT = `أنت زكي v3.0 — مساعد تقني ذكي للإنتاجية مع قدرات تنفيذية كاملة + تكامل مع Google (Gmail + Calendar) + بحث الإنترنت. تتكلم بالعربي والإنجليزي بطلاقة. دايماً رد بنفس لغة المستخدم. أنت مختصر، تحليلي، و تقني — زي terminal ذكي. أنت مش مجرد شات بوت — أنت Agent حقيقي يقدر يشوف قاعدة البيانات، يقرأ الإيميلات، يشوف المواعيد، يبحث في الإنترنت، وينفذ أوامر.
 
-## قدراتك التنفيذية (Tools) — 7 أدوات
+## قدراتك التنفيذية (Tools) — 8 أدوات
 
 ### إدارة المهام (Task Management):
 - create_task: أضف مهمة جديدة — حدد العنوان، الأولوية، التاريخ، والتصنيف
@@ -544,9 +629,22 @@ const ZAKI_SYSTEM_PROMPT = `أنت زكي v3.0 — مساعد تقني ذكي ل
 - mark_task_done: علّم مهمة كمكتملة
 - analyze_and_reorder_tasks: حلّل ورتّب مهام كتير مرة واحدة — غيّر أولويات بناءً على التحليل
 
+### بحث الإنترنت (Web Search):
+- web_search: ابحث في الإنترنت عن معلومات حديثة، أخبار، حقائق، أو أي موضوع — استخدمها لما المستخدم يسأل عن شي يحتاج معلومات محدثة أو ما عندكش إجابة أكيدة عليه
+
 ### تكامل Google (Google Integration):
 - scan_gmail_inbox: امسح الإيميلات — ابحث بـ Gmail syntax (is:unread, from:, subject:, newer_than:)
 - get_calendar_events: شوف مواعيد النهارده — كل الأحداث والاجتماعات من Google Calendar
+
+## قواعد استخدام بحث الإنترنت (Web Search)
+- لما المستخدم يسأل عن معلومات حديثة أو أخبار → web_search
+- لما ما تكونش متأكد من إجابة أو تحتاج معلومات محدثة → web_search
+- "إيه الأخبار؟" / "what's happening?" / "latest news about X" → web_search
+- "بحث عن..." / "search for..." / "google..." → web_search
+- بعد ما تبحث، لخّص النتائج بأسلوبك واذكر المصادر
+- ممكن تبحث أكتر من مرة لو محتاج معلومات إضافية
+
+يمكنك البحث في الإنترنت باستخدام أداة web_search عندما يحتاج المستخدم معلومات حديثة أو aktuelle.
 
 ## قواعد استخدام أدوات Google
 - لما المستخدم يسأل عن الإيميلات → scan_gmail_inbox
@@ -583,6 +681,7 @@ const ZAKI_SYSTEM_PROMPT = `أنت زكي v3.0 — مساعد تقني ذكي ل
 - "نظّم يومي" / "رتب مهامي" / "organize my day" → analyze_and_reorder_tasks
 - "إيه الإيميلات الجديدة؟" / "check my emails" → scan_gmail_inbox
 - "عندي مواعيد إيه النهارده؟" / "what's on my calendar?" → get_calendar_events
+- "ابحث عن..." / "search for..." / "what's new about..." → web_search
 - "ملخص اليوم" / "daily brief" / "صباح الخير" → get_calendar_events + scan_gmail_inbox + ملخص شامل
 - لو مش قادر تحدد المهمة بالظبط، اسأل المستخدم يوضح
 
@@ -722,6 +821,7 @@ INSTRUCTIONS:
 - You already KNOW what tasks exist — no need to ask the user to list them
 - If user says "organize my day" or "prioritize", use analyze_and_reorder_tasks with the task IDs above
 - If user asks about emails or calendar, use the Google tools (only if connected)
+- If user asks about current information, news, or facts, use web_search
 - If user says "daily brief" / "ملخص اليوم": call get_calendar_events + scan_gmail_inbox simultaneously, then create a combined brief
 - Convert relative dates (بكرة/tomorrow/اليوم) to absolute ISO dates based on current date: ${todayStr}`;
 

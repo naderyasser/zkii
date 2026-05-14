@@ -20,6 +20,7 @@ model User {
   dayLogs   DayLog[]
   emailSuggestions EmailSuggestion[]
   oAuthConfigs OAuthConfig[]
+  tags      Tag[]
 }
 
 model Task {
@@ -48,6 +49,7 @@ model Task {
   aiScore Float @default(0)
 
   dayLogs DayLogTask[]
+  tags    TagTask[]
 }
 
 model DayLog {
@@ -105,4 +107,26 @@ model OAuthConfig {
   scopes       String   @default("") // Comma-separated granted scopes
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("#7aa2f7")
+  createdAt DateTime @default(now())
+  tasks     TagTask[]
+
+  @@unique([userId, name])
+}
+
+model TagTask {
+  id     String @id @default(cuid())
+  tagId  String
+  tag    Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  taskId String
+  task   Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, taskId])
 }

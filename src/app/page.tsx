@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
-import { Terminal, Activity, MessageCircle, PanelRightClose, PanelRightOpen, BarChart3, Zap } from 'lucide-react';
+import { Terminal, Activity, PanelRightClose, PanelRightOpen, BarChart3, Zap, Search } from 'lucide-react';
 import { useUIStore } from '@/store/ui';
 import { useChat } from '@/hooks/useChat';
 import * as api from '@/lib/api';
@@ -18,8 +18,11 @@ import IntegrationsPanel from '@/components/integrations/IntegrationsPanel';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 import FocusMode from '@/components/focus/FocusMode';
 import AccountSwitcher from '@/components/account/AccountSwitcher';
+import CommandPalette from '@/components/command/CommandPalette';
 import { Button } from '@/components/ui/button';
 import { useCreateTask, useCompleteTask } from '@/hooks/useTasks';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 type MainTab = 'tasks' | 'heatmap' | 'analytics';
 
@@ -36,9 +39,15 @@ export default function Home() {
   const [focusTask, setFocusTask] = useState<Task | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
 
+  // Command palette state
+  const [cmdOpen, setCmdOpen] = useState(false);
+
   const createTask = useCreateTask();
   const completeTask = useCompleteTask();
   const { sendMessage } = useChat();
+
+  // Smart notifications
+  useNotifications();
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ['tasks', 'all'],
@@ -72,6 +81,15 @@ export default function Home() {
     setFocusOpen(false);
     setFocusTask(null);
   }, []);
+
+  // Command palette: focus task by ID
+  const handleCmdFocusTask = useCallback((taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setFocusTask(task);
+      setFocusOpen(true);
+    }
+  }, [tasks]);
 
   // ── State 1: Empty / First Visit ──────────────────────────────
   if (!tasksLoading && !hasTasks) {
@@ -144,6 +162,20 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Search / Cmd+K button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-[11px] text-koala-secondary hover:text-koala-bright hover:bg-hover gap-1.5"
+            onClick={() => setCmdOpen(true)}
+          >
+            <Search className="size-3" />
+            <span className="hidden sm:inline">بحث</span>
+            <kbd className="hidden md:inline-flex items-center rounded border border-border-subtle bg-hover px-1 py-0.5 text-[9px] font-mono text-koala-muted">
+              ⌘K
+            </kbd>
+          </Button>
+
           {/* Focus mode quick button */}
           {focusTask && !focusOpen && (
             <Button
@@ -156,6 +188,9 @@ export default function Home() {
               تركيز
             </Button>
           )}
+
+          {/* Notification bell */}
+          <NotificationBell />
 
           {/* Chat toggle */}
           <Button
@@ -228,6 +263,17 @@ export default function Home() {
         isOpen={focusOpen}
         onClose={handleCloseFocus}
         onComplete={handleFocusComplete}
+      />
+
+      {/* Command Palette */}
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        onSwitchTab={setMainTab}
+        onToggleChat={toggleChat}
+        onAddTask={handleAddTask}
+        onFocusTask={handleCmdFocusTask}
+        tasks={tasks}
       />
     </div>
   );

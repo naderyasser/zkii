@@ -78,6 +78,40 @@ export async function getOAuthStatus() {
   return request<OAuthStatus>('/api/integrations/status');
 }
 
+/* ─── Tags ─────────────────────────────────────────────── */
+export async function getTags() {
+  return request<TagType[]>('/api/tags');
+}
+
+export async function createTag(name: string, color?: string) {
+  return request<TagType>('/api/tags', {
+    method: 'POST',
+    body: JSON.stringify({ name, color }),
+  });
+}
+
+export async function deleteTag(id: string) {
+  return request<{ message: string }>(`/api/tags/${id}`, { method: 'DELETE' });
+}
+
+export async function getTaskTags(taskId: string) {
+  return request<TagType[]>(`/api/tasks/${taskId}/tags`);
+}
+
+export async function addTagToTask(taskId: string, tagId: string) {
+  return request<TagType>(`/api/tasks/${taskId}/tags`, {
+    method: 'POST',
+    body: JSON.stringify({ tagId }),
+  });
+}
+
+export async function removeTagFromTask(taskId: string, tagId: string) {
+  return request<{ message: string }>(`/api/tasks/${taskId}/tags`, {
+    method: 'DELETE',
+    body: JSON.stringify({ tagId }),
+  });
+}
+
 /* ─── Type imports for return types ────────────────────── */
 import type {
   Task,
@@ -87,4 +121,5 @@ import type {
   WeeklyScoreData,
   ChatResponse,
   OAuthStatus,
+  Tag as TagType,
 } from '@/types';
