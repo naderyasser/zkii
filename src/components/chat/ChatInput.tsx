@@ -29,27 +29,32 @@ export default function ChatInput({ onSend, isPending }: ChatInputProps) {
   );
 
   return (
-    <div className="flex items-center gap-2 border-t border-border-subtle p-3">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="اكتب أمر هنا..."
-        disabled={isPending}
-        className="flex-1 bg-transparent text-koala-primary placeholder:text-koala-muted focus:outline-none focus:ring-0"
-        style={{ fontSize: '13px' }}
-        dir="rtl"
-      />
-      <button
-        type="button"
-        onClick={handleSend}
-        disabled={!hasText || isPending}
-        className="flex items-center justify-center size-7 rounded-md bg-koala-purple text-base transition-opacity duration-150 hover:bg-koala-purple/80 disabled:opacity-0"
-        aria-label="إرسال"
-      >
-        <Send className="size-3.5 scale-x-[-1]" />
-      </button>
+    <div className="shrink-0 border-t border-border-subtle p-3">
+      <div className="flex items-center gap-2 bg-base rounded-lg border border-border-subtle px-3 py-2 focus-within:border-accent-blue/50 transition-colors duration-150">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="اكتب أمر هنا..."
+          disabled={isPending}
+          className="flex-1 bg-transparent text-koala-primary placeholder:text-koala-muted focus:outline-none focus:ring-0 text-[13px]"
+          dir="rtl"
+        />
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={!hasText || isPending}
+          className={`flex items-center justify-center size-7 rounded-md transition-all duration-150 shrink-0 ${
+            hasText && !isPending
+              ? 'bg-koala-purple text-base hover:bg-koala-purple/80'
+              : 'bg-hover text-koala-muted cursor-default'
+          }`}
+          aria-label="إرسال"
+        >
+          <Send className="size-3.5 scale-x-[-1]" />
+        </button>
+      </div>
     </div>
   );
 }

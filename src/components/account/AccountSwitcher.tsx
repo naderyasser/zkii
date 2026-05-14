@@ -9,7 +9,7 @@ interface AccountSwitcherProps {
   onAddAccount?: () => void;
 }
 
-export function AccountSwitcher({ onAddAccount }: AccountSwitcherProps) {
+export default function AccountSwitcher({ onAddAccount }: AccountSwitcherProps) {
   const [open, setOpen] = useState(false);
   const { initials } = useActiveAccount();
 

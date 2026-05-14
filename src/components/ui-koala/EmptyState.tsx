@@ -14,7 +14,7 @@ interface EmptyStateProps {
   onAddTask: (title: string) => void;
 }
 
-export function EmptyState({ onSuggestionClick, onAddTask }: EmptyStateProps) {
+export default function EmptyState({ onSuggestionClick, onAddTask }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       {/* Purple-glowing avatar circle */}

@@ -2,14 +2,15 @@
 
 import { cn } from '@/lib/utils';
 import { useTasksStore } from '@/store/tasks';
+import { Inbox, Sun, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 type TaskFilter = 'all' | 'today' | 'overdue' | 'done';
 
-const TABS: { key: TaskFilter; label: string }[] = [
-  { key: 'all', label: 'الكل' },
-  { key: 'today', label: 'النهارده' },
-  { key: 'overdue', label: 'المتأخرة' },
-  { key: 'done', label: 'المكتملة' },
+const TABS: { key: TaskFilter; label: string; icon: React.ElementType }[] = [
+  { key: 'all', label: 'الكل', icon: Inbox },
+  { key: 'today', label: 'النهارده', icon: Sun },
+  { key: 'overdue', label: 'المتأخرة', icon: AlertTriangle },
+  { key: 'done', label: 'المكتملة', icon: CheckCircle2 },
 ];
 
 export default function TaskFilters() {
@@ -17,22 +18,32 @@ export default function TaskFilters() {
   const setFilter = useTasksStore((s) => s.setFilter);
 
   return (
-    <nav className="flex items-center gap-1 border-b border-border-subtle" dir="rtl" aria-label="تصفية المهام">
-      {TABS.map(({ key, label }) => {
+    <div
+      className="flex items-center gap-1 p-1 rounded-lg bg-surface border border-border-subtle"
+      dir="rtl"
+      role="tablist"
+      aria-label="تصفية المهام"
+    >
+      {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = activeFilter === key;
         return (
-          <button key={key} onClick={() => setFilter(key)}
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
             className={cn(
-              'px-3 py-2 text-[13px] font-arabic transition-colors duration-150 border-b-2',
+              'flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-md transition-colors duration-150',
               isActive
-                ? 'text-accent-blue border-accent-blue'
-                : 'text-koala-secondary hover:text-koala-primary border-transparent',
+                ? 'bg-hover text-accent-blue font-medium'
+                : 'text-koala-secondary hover:text-koala-primary hover:bg-hover/50'
             )}
-            aria-current={isActive ? 'page' : undefined}>
+            role="tab"
+            aria-selected={isActive}
+          >
+            <Icon className="size-3 scale-x-[-1]" />
             {label}
           </button>
         );
       })}
-    </nav>
+    </div>
   );
 }

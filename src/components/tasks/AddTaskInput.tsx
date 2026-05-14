@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Send } from 'lucide-react';
+import { Plus, Send, Calendar, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -46,23 +46,23 @@ export default function AddTaskInput() {
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 bg-surface rounded-[10px] border border-border-subtle px-3 py-2.5 focus-within:border-accent-blue/50 transition-colors duration-150">
         <input
           value={quickValue}
           onChange={(e) => setQuickValue(e.target.value)}
           onKeyDown={handleQuickKeyDown}
           placeholder="مهمة جديدة... اضغط Enter للحفظ"
-          className="flex-1 bg-transparent text-[13px] text-koala-bright placeholder:text-koala-muted outline-none font-arabic"
+          className="flex-1 bg-transparent text-[13px] text-koala-bright placeholder:text-koala-muted outline-none"
           dir="rtl"
         />
         <button onClick={openDialog}
-          className="text-koala-secondary hover:text-koala-primary transition-opacity duration-150"
+          className="text-koala-secondary hover:text-koala-primary transition-colors duration-150 shrink-0"
           aria-label="خيارات إضافية">
-          <Plus className="size-4 scale-x-[-1]" />
+          <Calendar className="size-4 scale-x-[-1]" />
         </button>
         <button onClick={handleQuickSend} aria-label="إرسال"
-          className={cn('transition-opacity duration-150',
-            hasValue ? 'opacity-100 text-accent-blue' : 'opacity-0 pointer-events-none')}>
+          className={cn('transition-all duration-150 shrink-0',
+            hasValue ? 'text-accent-blue hover:text-accent-blue/80' : 'text-koala-muted pointer-events-none')}>
           <Send className="size-4 scale-x-[-1]" />
         </button>
       </div>
