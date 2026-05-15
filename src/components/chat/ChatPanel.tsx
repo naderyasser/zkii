@@ -6,13 +6,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import TypingIndicator from './TypingIndicator';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Globe } from 'lucide-react';
 
 const SUGGESTIONS = [
-  'إيه اللي عندي النهارده؟',
-  'أهم مهامي',
-  'ملخص اليوم',
-  'فكّر معايا',
+  { text: 'إيه اللي عندي النهارده؟', icon: Sparkles },
+  { text: 'أهم مهامي', icon: Sparkles },
+  { text: 'ملخص اليوم', icon: Sparkles },
+  { text: 'فكّر معايا', icon: Sparkles },
+  { text: 'ابحث عن أحدث أخبار التقنية', icon: Globe },
+  { text: 'إيه الأخبار؟', icon: Globe },
 ];
 
 export default function ChatPanel() {
@@ -36,7 +38,7 @@ export default function ChatPanel() {
               زكي
             </span>
             <span className="text-koala-secondary text-[10px]">
-              مساعدك الذكي
+              مساعدك الذكي · إدارة المهام + بحث الإنترنت + Google
             </span>
           </div>
           <span className="size-2 rounded-full bg-koala-green ms-auto shrink-0" />
@@ -52,18 +54,28 @@ export default function ChatPanel() {
                 أهلاً! اختار سؤال أو اكتب رسالة
               </p>
               <div className="flex flex-col gap-1.5">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => sendMessage(s)}
-                    disabled={isPending}
-                    className="text-koala-secondary hover:text-accent-blue hover:bg-hover rounded-md border border-border-subtle ps-3 pe-2 py-2 text-start transition-colors duration-150 text-[12px]"
-                    dir="rtl"
-                  >
-                    {s}
-                  </button>
-                ))}
+                {SUGGESTIONS.map((s) => {
+                  const IconComp = s.icon;
+                  const isSearch = s.icon === Globe;
+                  return (
+                    <button
+                      key={s.text}
+                      type="button"
+                      onClick={() => sendMessage(s.text)}
+                      disabled={isPending}
+                      className={`
+                        flex items-center gap-2 text-koala-secondary hover:text-accent-blue hover:bg-hover
+                        rounded-md border border-border-subtle ps-3 pe-2 py-2
+                        text-start transition-colors duration-150 text-[12px]
+                        ${isSearch ? 'border-koala-teal/20 hover:border-koala-teal/40 hover:text-koala-teal' : ''}
+                      `}
+                      dir="rtl"
+                    >
+                      <IconComp className={`size-3 shrink-0 ${isSearch ? 'text-koala-teal' : ''}`} />
+                      {s.text}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

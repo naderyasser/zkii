@@ -19,15 +19,23 @@ import {
   Activity,
   BarChart3,
   Focus,
+  LayoutGrid,
+  Target,
+  FolderKanban,
+  Globe,
+  Timer,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Task } from '@/types';
 
 /* ─── Props ──────────────────────────────────────────────── */
 
+type MainTab = 'tasks' | 'kanban' | 'habits' | 'projects' | 'heatmap' | 'analytics';
+
 export interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSwitchTab: (tab: 'tasks' | 'heatmap' | 'analytics') => void;
+  onSwitchTab: (tab: MainTab) => void;
   onToggleChat: () => void;
   onAddTask: (title: string) => void;
   onFocusTask: (taskId: string) => void;
@@ -42,6 +50,17 @@ const priorityIcon: Record<string, string> = {
   medium: '🟡',
   low: '🟢',
 };
+
+/* ─── Navigation items ──────────────────────────────────── */
+
+const NAV_ITEMS: { tab: MainTab; label: string; icon: React.ElementType; iconClass: string }[] = [
+  { tab: 'tasks', label: 'المهام', icon: LayoutList, iconClass: 'text-koala-purple' },
+  { tab: 'kanban', label: 'كانبان', icon: LayoutGrid, iconClass: 'text-accent-blue' },
+  { tab: 'habits', label: 'العادات', icon: Target, iconClass: 'text-koala-green' },
+  { tab: 'projects', label: 'المشاريع', icon: FolderKanban, iconClass: 'text-koala-purple' },
+  { tab: 'heatmap', label: 'النشاط', icon: Activity, iconClass: 'text-koala-teal' },
+  { tab: 'analytics', label: 'التحليلات', icon: BarChart3, iconClass: 'text-koala-yellow' },
+];
 
 /* ─── Component ──────────────────────────────────────────── */
 
@@ -149,7 +168,7 @@ export default function CommandPalette({
           </div>
 
           {/* List */}
-          <CommandList className="max-h-[340px] overflow-y-auto">
+          <CommandList className="max-h-[380px] overflow-y-auto">
             <CommandEmpty className="py-8 text-center text-sm text-koala-secondary font-[family-name:var(--font-cairo)]">
               لا توجد نتائج
             </CommandEmpty>
@@ -204,7 +223,6 @@ export default function CommandPalette({
                 value="إنشاء مهمة جديدة"
                 onSelect={() => {
                   close();
-                  // Prompt for task title inline — use a simple approach
                   const title = window.prompt?.('عنوان المهمة');
                   if (title?.trim()) onAddTask(title.trim());
                 }}
@@ -234,6 +252,42 @@ export default function CommandPalette({
                 <MessageCircle className="size-4 text-accent-blue" />
                 <span className="font-[family-name:var(--font-cairo)]">تبديل المحادثة</span>
               </CommandItem>
+
+              <CommandItem
+                value="بحث في الإنترنت"
+                onSelect={() => {
+                  close();
+                  onToggleChat();
+                }}
+                className="
+                  flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
+                  cursor-pointer
+                  text-sm text-koala-primary
+                  data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
+                  transition-colors
+                "
+              >
+                <Globe className="size-4 text-koala-teal" />
+                <span className="font-[family-name:var(--font-cairo)]">بحث في الإنترنت (عبر المحادثة)</span>
+              </CommandItem>
+
+              <CommandItem
+                value="وضع التركيز"
+                onSelect={() => {
+                  close();
+                  if (pendingTasks.length > 0) onFocusTask(pendingTasks[0].id);
+                }}
+                className="
+                  flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
+                  cursor-pointer
+                  text-sm text-koala-primary
+                  data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
+                  transition-colors
+                "
+              >
+                <Timer className="size-4 text-koala-green" />
+                <span className="font-[family-name:var(--font-cairo)]">وضع التركيز</span>
+              </CommandItem>
             </CommandGroup>
 
             <CommandSeparator className="bg-border-subtle" />
@@ -248,50 +302,23 @@ export default function CommandPalette({
               }
               className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2"
             >
-              <CommandItem
-                value="المهام"
-                onSelect={() => handleSelect(() => onSwitchTab('tasks'))}
-                className="
-                  flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
-                  cursor-pointer
-                  text-sm text-koala-primary
-                  data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
-                  transition-colors
-                "
-              >
-                <LayoutList className="size-4 text-koala-purple" />
-                <span className="font-[family-name:var(--font-cairo)]">المهام</span>
-              </CommandItem>
-
-              <CommandItem
-                value="النشاط"
-                onSelect={() => handleSelect(() => onSwitchTab('heatmap'))}
-                className="
-                  flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
-                  cursor-pointer
-                  text-sm text-koala-primary
-                  data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
-                  transition-colors
-                "
-              >
-                <Activity className="size-4 text-koala-teal" />
-                <span className="font-[family-name:var(--font-cairo)]">النشاط</span>
-              </CommandItem>
-
-              <CommandItem
-                value="التحليلات"
-                onSelect={() => handleSelect(() => onSwitchTab('analytics'))}
-                className="
-                  flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
-                  cursor-pointer
-                  text-sm text-koala-primary
-                  data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
-                  transition-colors
-                "
-              >
-                <BarChart3 className="size-4 text-koala-yellow" />
-                <span className="font-[family-name:var(--font-cairo)]">التحليلات</span>
-              </CommandItem>
+              {NAV_ITEMS.map(({ tab, label, icon: Icon, iconClass }) => (
+                <CommandItem
+                  key={tab}
+                  value={label}
+                  onSelect={() => handleSelect(() => onSwitchTab(tab))}
+                  className="
+                    flex items-center gap-2.5 px-3 py-2 mx-1 rounded-md
+                    cursor-pointer
+                    text-sm text-koala-primary
+                    data-[selected=true]:bg-hover data-[selected=true]:text-koala-bright
+                    transition-colors
+                  "
+                >
+                  <Icon className={cn('size-4', iconClass)} />
+                  <span className="font-[family-name:var(--font-cairo)]">{label}</span>
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
 
@@ -309,3 +336,5 @@ export default function CommandPalette({
     </div>
   );
 }
+
+
