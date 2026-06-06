@@ -53,4 +53,6 @@ prompt
 
 server.log
 # Skills directory
-/skills/
+/skills
+
+db/*.bak-*

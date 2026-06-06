@@ -100,6 +100,8 @@ model EmailSuggestion {
   suggestedPriority String @default("medium")
   confirmed        Boolean? // null=pending, true=accepted, false=rejected
   createdAt        DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -178,6 +180,8 @@ model Habit {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   logs        HabitLog[]
+
+  @@index([userId])
 }
 
 model HabitLog {
@@ -224,15 +228,19 @@ model Database {
   id         String @id @default(cuid())
   pageId     String @unique
   page       Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  userId     String? // عزل المستخدم (backfill من الصفحة الأم)
   properties String // JSON: [{id,name,type,options}] — types: text,number,select,multiSelect,date,checkbox,url,relation
   views      String // JSON: [{id,name,type:'table'|'kanban'|'calendar'|'list',filters,sorts,groupBy}]
   rows       Row[]
+
+  @@index([userId])
 }
 
 model Row {
   id         String   @id @default(cuid())
   databaseId String
   database   Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  userId     String? // عزل المستخدم (backfill من database→page)
   properties String // JSON: {propId: value}
   pageId     String? // كل row ممكن يفتح كصفحة كاملة
   position   Float    @default(0)
@@ -240,4 +248,5 @@ model Row {
   updatedAt  DateTime @updatedAt
 
   @@index([databaseId])
+  @@index([userId])
 }
