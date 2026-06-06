@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import { chatCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { DEFAULT_USER_ID } from '@/lib/task-utils';
 
@@ -56,10 +56,8 @@ export async function POST(request: NextRequest) {
       },
     ];
 
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
+    const completion = await chatCompletion({
       messages: promptMessages,
-      thinking: { type: 'disabled' },
     });
 
     const summary =
