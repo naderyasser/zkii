@@ -117,7 +117,7 @@ async function main() {
     { id: 'kanban', name: 'كانبان', type: 'kanban', filters: [], sorts: [], groupBy: 'status' },
     { id: 'calendar', name: 'تقويم', type: 'calendar', filters: [], sorts: [], groupBy: null },
   ];
-  const tasksDb = await findOrCreateDatabasePage({ title: 'المهام', icon: '📋', properties: tasksDbProps, views: tasksViews });
+  const tasksDb = await findOrCreateDatabasePage({ title: 'المهام', icon: 'lucide:ListTodo', properties: tasksDbProps, views: tasksViews });
 
   const tasks = await db.task.findMany({ where: { userId: USER_ID }, include: { tags: true } });
   let tCount = 0;
@@ -141,7 +141,7 @@ async function main() {
     { id: 'description', name: 'الوصف', type: 'text' },
     { id: 'icon', name: 'الأيقونة', type: 'text' },
   ];
-  const projDb = await findOrCreateDatabasePage({ title: 'المشاريع', icon: '📁', properties: projDbProps, views: defaultViews });
+  const projDb = await findOrCreateDatabasePage({ title: 'المشاريع', icon: 'lucide:Folder', properties: projDbProps, views: defaultViews });
   let pCount = 0;
   for (const p of projects) {
     const created = await upsertRow(projDb.id, '_projectId', p.id, {
@@ -162,7 +162,7 @@ async function main() {
     ] },
     { id: 'target', name: 'الهدف', type: 'number' },
   ];
-  const habitDb = await findOrCreateDatabasePage({ title: 'العادات', icon: '🔁', properties: habitDbProps, views: defaultViews });
+  const habitDb = await findOrCreateDatabasePage({ title: 'العادات', icon: 'lucide:Repeat', properties: habitDbProps, views: defaultViews });
   const habits = await db.habit.findMany({ where: { userId: USER_ID } });
   let hCount = 0;
   for (const h of habits) {
@@ -179,9 +179,9 @@ async function main() {
       { type: 'paragraph', content: `${label} متاحة حالياً في الأدوات القديمة.` },
       { type: 'paragraph', content: [{ type: 'link', href, content: 'افتح الأداة ↗' }] },
     ]);
-  await findOrCreatePage('التركيز', '🎯', toolNote('أداة التركيز (Pomodoro)', '/legacy'));
-  await findOrCreatePage('التحليلات', '📊', toolNote('لوحة التحليلات والـ heatmap', '/legacy'));
-  await findOrCreatePage('شات زكي', '💬', toolNote('محادثة زكي', '/legacy'));
+  await findOrCreatePage('التركيز', 'lucide:Target', toolNote('أداة التركيز (Pomodoro)', '/legacy'));
+  await findOrCreatePage('التحليلات', 'lucide:BarChart3', toolNote('لوحة التحليلات والـ heatmap', '/legacy'));
+  await findOrCreatePage('شات زكي', 'lucide:MessageSquare', toolNote('محادثة زكي', '/legacy'));
 
   log('done ✓');
   await db.$disconnect();

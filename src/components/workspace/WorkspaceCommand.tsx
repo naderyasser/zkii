@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Search, FileText, Plus, Database as DbIcon } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { usePagesTree, useCreatePage } from '@/hooks/usePages';
 import * as api from '@/lib/api';
+import PageIcon from './PageIcon';
 import type { WorkspacePageNode } from '@/types';
 
 function flatten(nodes: WorkspacePageNode[], acc: WorkspacePageNode[] = []): WorkspacePageNode[] {
@@ -57,7 +58,7 @@ export default function WorkspaceCommand({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 pt-[15vh]" onClick={onClose}>
       <div
         dir="rtl"
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-border-default bg-surface shadow-xl animate-in fade-in-0 zoom-in-95"
+        className="w-full max-w-lg overflow-hidden rounded-[var(--radius)] border border-museum-gold bg-surface shadow-[var(--shadow-museum)] animate-in fade-in-0 zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-border-subtle px-3">
@@ -78,8 +79,8 @@ export default function WorkspaceCommand({ onClose }: Props) {
               onClick={() => go(p.id)}
               className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-start text-sm text-koala-primary hover:bg-hover"
             >
-              <span className="mt-0.5 w-5 text-center text-[15px] leading-none">
-                {p.icon || (p.type === 'database' ? <DbIcon size={15} className="inline text-koala-secondary" /> : <FileText size={15} className="inline text-koala-secondary" />)}
+              <span className="mt-0.5 flex w-5 items-center justify-center">
+                <PageIcon icon={p.icon} size={15} />
               </span>
               <span className="flex-1 overflow-hidden">
                 <span className="block truncate">{p.title || 'بدون عنوان'}</span>
