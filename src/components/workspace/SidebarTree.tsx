@@ -26,6 +26,17 @@ import type { WorkspacePageNode } from '@/types';
 
 const INDENT = 14;
 
+// أول لون من باليتة الصفحة (لنقطة الـ sidebar)
+function swatchColor(paletteJson: string | null | undefined): string | null {
+  if (!paletteJson) return null;
+  try {
+    const p = JSON.parse(paletteJson) as { swatches?: string[] };
+    return p.swatches?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface RowProps {
   item: FlatItem;
   depth: number;
@@ -52,12 +63,15 @@ function TreeRow({ item, depth, active, onToggle, onNavigate, onAddChild, onArch
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-1 rounded-md pe-1 py-[5px] text-[13px] select-none cursor-pointer
+      className={`group relative flex items-center gap-1 rounded-md pe-1 py-[5px] text-[13px] select-none cursor-pointer
         ${active ? 'bg-elevated text-koala-bright' : 'text-koala-primary hover:bg-hover'}
         ${isDragging ? 'opacity-40' : ''}`}
       {...attributes}
       {...listeners}
     >
+      {/* شرطة جانبية ذهبية للعنصر النشط (بدون radius) */}
+      {active && <span className="absolute inset-y-0 start-0 w-[2px] bg-museum-gold" />}
+
       {/* chevron / spacer */}
       {item.hasChildren ? (
         <button
@@ -77,6 +91,12 @@ function TreeRow({ item, depth, active, onToggle, onNavigate, onAddChild, onArch
       <span className="flex-1 truncate" onClick={() => onNavigate(item.id)}>
         {node.title || 'بدون عنوان'}
       </span>
+
+      {/* نقطة لون من باليتة لوحة الصفحة */}
+      {(() => {
+        const c = swatchColor(node.palette);
+        return c ? <span className="me-1 h-[7px] w-[7px] shrink-0 rounded-full" style={{ background: c }} /> : null;
+      })()}
 
       {/* hover actions */}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">

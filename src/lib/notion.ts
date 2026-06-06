@@ -44,6 +44,8 @@ export interface SerializedPage {
   title: string;
   icon: string | null;
   coverUrl: string | null;
+  coverMeta: string | null;
+  palette: string | null;
   parentId: string | null;
   type: string;
   content: string | null;
@@ -99,6 +101,8 @@ export function serializePage(
     title: page.title,
     icon: page.icon,
     coverUrl: page.coverUrl,
+    coverMeta: page.coverMeta,
+    palette: page.palette,
     parentId: page.parentId,
     type: page.type,
     content: page.content,

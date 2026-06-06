@@ -39,11 +39,13 @@ function Column({ id, label, color, rows, titleId, onOpenRow }: {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div className="flex w-64 shrink-0 flex-col">
-      <div className="mb-2 flex items-center gap-1.5 px-1 text-xs font-medium text-koala-secondary">
-        {color && <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />}
-        {label} <span className="text-koala-muted">{rows.length}</span>
+      {/* عنوان «القاعة» — Amiri + خط hairline تحته، بدون خلفية ملونة */}
+      <div className="mb-2 flex items-center gap-1.5 border-b border-border-subtle px-1 pb-1.5 font-amiri text-sm">
+        {color && <span className="h-[7px] w-[7px] rounded-full" style={{ background: color }} />}
+        <span className="text-koala-primary">{label}</span>
+        <span className="text-koala-muted">{rows.length}</span>
       </div>
-      <div ref={setNodeRef} className={`flex min-h-[120px] flex-col gap-2 rounded-lg p-1.5 ${isOver ? 'bg-elevated' : 'bg-base'}`}>
+      <div ref={setNodeRef} className={`flex min-h-[120px] flex-col gap-2 rounded-[var(--radius)] p-1.5 ${isOver ? 'bg-elevated' : ''}`}>
         {rows.map((r) => (
           <Card key={r.id} row={r} title={String(r.properties[titleId] ?? '')} onOpen={() => onOpenRow(r)} />
         ))}
