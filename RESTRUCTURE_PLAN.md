@@ -98,7 +98,11 @@
   - `scripts/migrate-to-pages.ts` (idempotent عبر markers `_taskId`/`_projectId`/`_habitId`) + `npm run migrate:pages`.
   - أنشأ صفحات جذرية: 📋 المهام (database: الحالة/الأولوية select، التاريخ date، المشروع select، الوسوم multiSelect، + views جدول/كانبان/تقويم) · 📁 المشاريع · 🔁 العادات · وصفحات أدوات 🎯/📊/💬 (روابط مؤقتة لـ /legacy).
   - **تحقّق**: 17 مهمة اتنقلت، run تاني = 0 جديد (idempotent)، الصفوف متطابقة. الجداول القديمة `// @deprecated` (مش متمسوحة). الأدوات في /legacy لسه شغّالة (مفيش routes قديمة تتحوّل redirect).
-- [ ] 7 — بحث + اختصارات + سياق الصفحة
+- [x] 7 — بحث + اختصارات + سياق الصفحة ✓:
+  - `/api/search` — LIKE على `title` + `content` مع استخراج نص من BlockNote JSON و snippet. `WorkspaceCommand` بقى server-search (debounced) في العناوين + المحتوى.
+  - `PageChat` — زر «اسأل زكي عن الصفحة» يفتح slide-over بيبعت محتوى الصفحة كـ context عبر streaming (`/api/ai/stream`) + اقتراحات.
+  - اختصارات: Ctrl+K بحث · Ctrl+N صفحة · Ctrl+\ إخفاء الشريط (في `WorkspaceShell`).
+  - **تحقّق**: بحث بالعنوان ✓ وبالمحتوى («زعفران» مع snippet) ✓، build ✓.
 - [ ] 8 — Polish
 - [ ] 9 — Deployment
 
