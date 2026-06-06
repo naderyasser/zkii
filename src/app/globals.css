@@ -4,78 +4,122 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   KOALA — Neovim-inspired dark palette (DARK ONLY)
+   MUSEUM — قاعة النهار (LIGHT / default). الأسماء القديمة (Koala) مُعاد تعيينها
+   لقيم المتحف عشان كل الـ classes الموجودة تتحوّل تلقائياً. الليل في .dark تحت.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  --radius: 0.375rem;
+  --radius: 0.3rem;
+  --shadow-museum: 0 1px 2px rgba(46, 42, 34, 0.06);
 
-  /* Backgrounds */
-  --bg-base: #1a1a2e;
-  --bg-surface: #16213e;
-  --bg-elevated: #0f3460;
-  --bg-hover: #1e2a4a;
+  /* توكنز المتحف الصريحة (نهار) */
+  --museum-paper: #f6f0e2;
+  --museum-paper-2: #efe6d0;
+  --museum-paper-3: #f1e9d6;
+  --museum-ink: #2e2a22;
+  --museum-ink-2: #6e6550;
+  --museum-gold: #a8853b;
+  --museum-gold-deep: #8a6d2f;
+  --museum-burgundy: #7c2f2a;
+  --museum-olive: #56603f;
+  --museum-line: #d6c79c;
+  --museum-danger: #8e3b2f;
 
-  /* Text */
-  --text-primary: #a9b1d6;
-  --text-secondary: #565f89;
-  --text-muted: #3b4261;
-  --text-bright: #c0caf5;
+  /* إعادة تعيين أسماء Koala القديمة → المتحف */
+  --bg-base: var(--museum-paper);
+  --bg-surface: var(--museum-paper-2);
+  --bg-elevated: var(--museum-paper-3);
+  --bg-hover: #e7dcc2;
+  --text-primary: var(--museum-ink);
+  --text-secondary: var(--museum-ink-2);
+  --text-muted: #9c8f70;
+  --text-bright: #211e16;
+  --accent-coral: var(--museum-danger);
+  --accent-blue: var(--museum-burgundy);
+  --accent-purple: #5a4a6a;
+  --accent-teal: var(--museum-olive);
+  --accent-yellow: var(--museum-gold);
+  --accent-orange: #b5702e;
+  --accent-green: var(--museum-olive);
+  --border-subtle: var(--museum-line);
+  --border-default: #cdbc8e;
+  --border-strong: var(--museum-gold);
 
-  /* Accent colors */
-  --accent-coral: #e94560;
-  --accent-blue: #7aa2f7;
-  --accent-purple: #bb9af7;
-  --accent-teal: #73daca;
-  --accent-yellow: #e0af68;
-  --accent-orange: #ff9e64;
-  --accent-green: #9ece6a;
-
-  /* Borders */
-  --border-subtle: #292e42;
-  --border-default: #3b4261;
-  --border-strong: #565f89;
-
-  /* shadcn/ui semantic mapping */
-  --background: var(--bg-base);
-  --foreground: var(--text-primary);
-  --card: var(--bg-surface);
-  --card-foreground: var(--text-primary);
-  --popover: var(--bg-elevated);
-  --popover-foreground: var(--text-bright);
-  --primary: var(--accent-blue);
-  --primary-foreground: var(--bg-base);
+  /* shadcn/ui semantic mapping → museum */
+  --background: var(--museum-paper);
+  --foreground: var(--museum-ink);
+  --card: var(--museum-paper-3);
+  --card-foreground: var(--museum-ink);
+  --popover: var(--museum-paper-3);
+  --popover-foreground: var(--museum-ink);
+  --primary: var(--museum-burgundy);
+  --primary-foreground: var(--museum-paper);
   --secondary: var(--bg-hover);
-  --secondary-foreground: var(--text-primary);
+  --secondary-foreground: var(--museum-ink);
   --muted: var(--bg-hover);
-  --muted-foreground: var(--text-secondary);
+  --muted-foreground: var(--museum-ink-2);
   --accent: var(--bg-hover);
-  --accent-foreground: var(--text-bright);
-  --destructive: var(--accent-coral);
-  --destructive-foreground: #ffffff;
-  --border: var(--border-subtle);
+  --accent-foreground: var(--museum-ink);
+  --destructive: var(--museum-danger);
+  --destructive-foreground: var(--museum-paper);
+  --border: var(--museum-line);
   --input: var(--border-default);
-  --ring: var(--accent-blue);
-  --chart-1: var(--accent-blue);
-  --chart-2: var(--accent-teal);
-  --chart-3: var(--accent-purple);
-  --chart-4: var(--accent-yellow);
-  --chart-5: var(--accent-green);
-  --sidebar: var(--bg-surface);
-  --sidebar-foreground: var(--text-primary);
-  --sidebar-primary: var(--accent-blue);
-  --sidebar-primary-foreground: var(--bg-base);
+  --ring: var(--museum-gold);
+  --chart-1: var(--museum-burgundy);
+  --chart-2: var(--museum-olive);
+  --chart-3: var(--museum-gold);
+  --chart-4: var(--accent-orange);
+  --chart-5: var(--accent-purple);
+  --sidebar: var(--museum-paper-2);
+  --sidebar-foreground: var(--museum-ink);
+  --sidebar-primary: var(--museum-burgundy);
+  --sidebar-primary-foreground: var(--museum-paper);
   --sidebar-accent: var(--bg-hover);
-  --sidebar-accent-foreground: var(--text-bright);
-  --sidebar-border: var(--border-subtle);
-  --sidebar-ring: var(--accent-blue);
+  --sidebar-accent-foreground: var(--museum-ink);
+  --sidebar-border: var(--museum-line);
+  --sidebar-ring: var(--museum-gold);
+}
+
+/* ─── المتحف بالليل (DARK) ─── */
+.dark {
+  --museum-paper: #211e19;
+  --museum-paper-2: #2a261f;
+  --museum-paper-3: #322d24;
+  --museum-ink: #eae3d2;
+  --museum-ink-2: #a39a85;
+  --museum-gold: #c2a156;
+  --museum-gold-deep: #d4b86a;
+  --museum-burgundy: #c46b63;
+  --museum-olive: #8fa071;
+  --museum-line: #463f32;
+  --museum-danger: #c46b5a;
+
+  --bg-base: var(--museum-paper);
+  --bg-surface: var(--museum-paper-2);
+  --bg-elevated: var(--museum-paper-3);
+  --bg-hover: #3a3428;
+  --text-primary: var(--museum-ink);
+  --text-secondary: var(--museum-ink-2);
+  --text-muted: #7a7058;
+  --text-bright: #f4eedd;
+  --accent-coral: var(--museum-danger);
+  --accent-blue: var(--museum-burgundy);
+  --accent-purple: #9a86b0;
+  --accent-teal: var(--museum-olive);
+  --accent-yellow: var(--museum-gold);
+  --accent-orange: #d08a4a;
+  --accent-green: var(--museum-olive);
+  --border-subtle: var(--museum-line);
+  --border-default: #574e3d;
+  --border-strong: var(--museum-gold);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-arabic: var(--font-cairo);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-ibm-plex);
+  --font-arabic: var(--font-ibm-plex);
+  --font-amiri: var(--font-amiri);
+  --font-mono: var(--font-ibm-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -129,6 +173,21 @@
   --color-border-subtle: var(--border-subtle);
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
+
+  /* Museum explicit tokens → utilities (bg-museum-paper, text-museum-gold, ...) */
+  --color-museum-paper: var(--museum-paper);
+  --color-museum-paper-2: var(--museum-paper-2);
+  --color-museum-paper-3: var(--museum-paper-3);
+  --color-museum-ink: var(--museum-ink);
+  --color-museum-ink-2: var(--museum-ink-2);
+  --color-museum-gold: var(--museum-gold);
+  --color-museum-gold-deep: var(--museum-gold-deep);
+  --color-museum-burgundy: var(--museum-burgundy);
+  --color-museum-olive: var(--museum-olive);
+  --color-museum-line: var(--museum-line);
+  --color-museum-danger: var(--museum-danger);
+
+  --shadow-museum: var(--shadow-museum);
 }
 
 @layer base {
@@ -137,6 +196,42 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MUSEUM — قواعد عامة (أيقونات، focus، خط العناوين، حركة منضبطة)
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* أيقونات lucide: hairline موحّد */
+svg.lucide {
+  stroke-width: 1.5px;
+}
+
+/* خط العناوين/الاقتباسات — Amiri (صوت الهوية) */
+.font-amiri {
+  font-family: var(--font-amiri), 'Amiri', serif;
+}
+
+/* focus ring ذهبي بدون glow */
+:focus-visible {
+  outline: 2px solid var(--museum-gold);
+  outline-offset: 1px;
+}
+
+/* انتقالات منضبطة لتبديل الباليتة/الوضع */
+.museum-page-root {
+  transition: background-color 400ms ease-out, color 400ms ease-out;
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -252,11 +347,44 @@
   background: var(--border-default);
 }
 
-/* ─── BlockNote editor: خط عربي (Cairo) + اتجاه RTL ─────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   BlockNote — هوية المتحف (مش الشكل الافتراضي): توكنز + Amiri + اقتباس ذهبي
+   ═══════════════════════════════════════════════════════════════════════════ */
 .zaki-editor .bn-editor,
 .zaki-editor .bn-container {
-  font-family: var(--font-cairo), system-ui, sans-serif;
+  font-family: var(--font-ibm-plex), system-ui, sans-serif;
+  --bn-colors-editor-background: var(--museum-paper);
+  --bn-colors-editor-text: var(--museum-ink);
+  --bn-colors-menu-background: var(--museum-paper-3);
+  --bn-colors-menu-text: var(--museum-ink);
+  --bn-colors-tooltip-background: var(--museum-paper-3);
+  --bn-colors-tooltip-text: var(--museum-ink);
+  --bn-colors-hovered-background: var(--bg-hover);
+  --bn-colors-hovered-text: var(--museum-ink);
+  --bn-colors-selected-background: var(--museum-gold);
+  --bn-colors-selected-text: var(--museum-paper);
+  --bn-colors-disabled-background: var(--museum-paper-2);
+  --bn-colors-disabled-text: var(--museum-ink-2);
+  --bn-colors-border: var(--museum-line);
+  --bn-colors-side-menu: var(--museum-ink-2);
+  --bn-border-radius: 0.3rem;
 }
 .zaki-editor .bn-block-content {
   text-align: start;
+}
+/* عناوين المحرر بخط Amiri */
+.zaki-editor h1,
+.zaki-editor h2,
+.zaki-editor h3 {
+  font-family: var(--font-amiri), serif;
+}
+/* اقتباس: حد جانبي ذهبي 2px (radius 0) + Amiri مايل */
+.zaki-editor blockquote,
+.zaki-editor [data-content-type='quote'] {
+  border-inline-start: 2px solid var(--museum-gold);
+  border-radius: 0;
+  font-family: var(--font-amiri), serif;
+  font-style: italic;
+  padding-inline-start: 0.9rem;
+  color: var(--museum-ink);
 }
