@@ -25,6 +25,8 @@ model User {
   habits    Habit[]
 }
 
+// @deprecated منذ المرحلة 6 — اتنقلت لـ Page/Database/Row (قاعدة «المهام»).
+// مُحتفَظ بها للأدوات القديمة (/legacy) وللـ rollback. متمسحهاش.
 model Task {
   id          String   @id @default(cuid())
   userId      String
@@ -143,6 +145,7 @@ model TagTask {
 // ═══════════════════════════════════════════════════════════════
 // Projects — Group tasks by project
 // ═══════════════════════════════════════════════════════════════
+// @deprecated منذ المرحلة 6 — اتنقلت لقاعدة «المشاريع» (Page/Database/Row). متمسحهاش.
 model Project {
   id          String   @id @default(cuid())
   userId      String
@@ -161,6 +164,7 @@ model Project {
 // ═══════════════════════════════════════════════════════════════
 // Habits — Daily habit tracking with streaks
 // ═══════════════════════════════════════════════════════════════
+// @deprecated منذ المرحلة 6 — اتنقلت لقاعدة «العادات» (Page/Database/Row). متمسحهاش.
 model Habit {
   id          String     @id @default(cuid())
   userId      String
