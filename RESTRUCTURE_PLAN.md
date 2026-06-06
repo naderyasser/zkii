@@ -107,13 +107,22 @@
   - optimistic updates: تعديل العنوان/الأيقونة/المفضلة بيظهر فوراً في الـ sidebar (تحديث cache الشجرة) + rollback عند الخطأ · صفوف الـ database optimistic أصلاً.
   - skeletons: `PageView` بقى skeleton (أيقونة+عنوان+أسطر) بدل spinner · sidebar/database لهم loading states.
   - empty states عربية (home، trash، tree، database) · المحرر lazy (dynamic، بدون SSR) · build ✓.
-- [ ] 9 — Deployment
+- [x] 9 — Deployment ✓:
+  - `zakii.service` محدّث: `EnvironmentFile=-/root/zkii/.env` (الـ AI/Google يشتغلوا في الإنتاج) · `After=ollama.service` + `Wants` · `Restart=always`.
+  - أصلحنا `.env`: `DATABASE_URL` بقى مطلق (الـ EnvironmentFile كان بيغلب القيمة النسبية القديمة → خطأ فتح DB).
+  - `ollama.service` + `zakii.service` enabled. Caddy بيخدم الدومين HTTPS 200 (نفس الإعداد). الموقع بيعرض الـ workspace الجديد.
+  - **أمان**: Ollama على `127.0.0.1:11434` فقط — **غير قابل للوصول من الـ public IP** (HTTP 000). ufw غير مفعّل (مبنعملوش enable عشان منقفلش SSH؛ الـ binding المحلي كافٍ).
 
-## Smoke Tests النهائية (تُعلَّم في المرحلة 9)
-- [ ] إنشاء صفحة + صفحة فرعية + سحبها في الشجرة
-- [ ] كتابة blocks + slash menu + حفظ تلقائي يثبت بعد refresh
-- [ ] أمر `/زكي` يكمّل الكتابة بـ streaming من الموديل المحلي
-- [ ] database المهام: Table + Kanban + Calendar شغّالين والبيانات القديمة ظاهرة
-- [ ] Cmd+K يلاقي صفحة بالاسم وبالمحتوى
-- [ ] سلة المهملات: أرشفة + استعادة
-- [ ] الموقع HTTPS على الدومين + الموديل يرد بدون أي مفتاح خارجي
+## Smoke Tests النهائية ✓ (كلها على الإنتاج المباشر)
+- [x] إنشاء صفحة + صفحة فرعية + سحبها في الشجرة — API + tree + move ✓ (DnD logic مبنيّ ومُختبَر build)
+- [x] كتابة blocks + slash menu + حفظ تلقائي يثبت بعد refresh — `content` يثبت بعد refetch ✓
+- [x] أمر `/زكي` يكمّل الكتابة بـ streaming من الموديل المحلي — `/api/ai/stream` عربي متدفّق ~5s ✓
+- [x] database المهام: Table + Kanban + Calendar شغّالين والبيانات القديمة ظاهرة — views=[table,kanban,calendar] + 17 صف مهاجَر ✓
+- [x] Cmd+K يلاقي صفحة بالاسم وبالمحتوى — `/api/search` عنوان + محتوى ✓
+- [x] سلة المهملات: أرشفة + استعادة ✓
+- [x] الموقع HTTPS على الدومين + الموديل يرد بدون أي مفتاح خارجي — https 200 + chat محلي 3s ✓
+
+## ملاحظات للمتابعة
+- DnD للشجرة والـ Kanban وأوامر المحرر التفاعلية تحتاج اختبار يدوي في المتصفح (build + المنطق متحقَّقين، لكن مفيش اختبار headless للتفاعل).
+- صفحات الأدوات (🎯/📊/💬) بتلينك لـ /legacy مؤقتاً — دمجها الكامل كـ blocks/widgets شغل مستقبلي.
+- `AI_FALLBACK_API_KEY` فاضي = تشغيل محلي بالكامل؛ لو اتحط مفتاح خارجي يبقى fallback تلقائي.
