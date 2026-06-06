@@ -2,10 +2,32 @@
 
 import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Sparkles } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
 import DatabaseView from './database/DatabaseView';
+import PageChat from './PageChat';
 import type { PartialBlock } from '@blocknote/core';
+
+// استخراج نص مقروء من محتوى BlockNote (للشات بسياق الصفحة)
+function extractText(content: string | null): string {
+  if (!content) return '';
+  let parsed: unknown;
+  try { parsed = JSON.parse(content); } catch { return ''; }
+  const parts: string[] = [];
+  const walk = (n: unknown) => {
+    if (!n) return;
+    if (typeof n === 'string') { parts.push(n); return; }
+    if (Array.isArray(n)) { n.forEach(walk); return; }
+    if (typeof n === 'object') {
+      const o = n as Record<string, unknown>;
+      if (typeof o.text === 'string') parts.push(o.text);
+      if (o.content) walk(o.content);
+      if (o.children) walk(o.children);
+    }
+  };
+  walk(parsed);
+  return parts.join(' ');
+}
 
 // المحرّر يُحمّل ديناميكياً بدون SSR (BlockNote يحتاج DOM)
 const PageEditor = dynamic(() => import('./PageEditor'), {
@@ -32,6 +54,7 @@ export default function PageView({ pageId }: { pageId: string }) {
   const [title, setTitle] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const [syncedId, setSyncedId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   // مزامنة العنوان المحلي عند تغيّر الصفحة (نمط render-time بدل useEffect)
@@ -69,6 +92,16 @@ export default function PageView({ pageId }: { pageId: string }) {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
+      {/* اسأل زكي عن الصفحة */}
+      <div className="mb-2 flex justify-start">
+        <button
+          onClick={() => setChatOpen(true)}
+          className="flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1 text-xs text-koala-secondary hover:border-border-default hover:text-accent-blue"
+        >
+          <Sparkles size={13} /> اسأل زكي عن الصفحة
+        </button>
+      </div>
+
       {/* Icon + title */}
       <div className="relative mb-6">
         <button
@@ -105,7 +138,7 @@ export default function PageView({ pageId }: { pageId: string }) {
         />
       </div>
 
-      {/* Content area — placeholder حتى المرحلة 4 (المحرر) / 5 (قاعدة البيانات) */}
+      {/* Content area: قاعدة بيانات أو محرّر blocks */}
       {page.database ? (
         <DatabaseView databaseId={page.database.id} />
       ) : (
@@ -113,6 +146,14 @@ export default function PageView({ pageId }: { pageId: string }) {
           key={page.id}
           initialContent={parseContent(page.content)}
           onSave={(json) => updatePage.mutate({ id: page.id, data: { content: json } })}
+        />
+      )}
+
+      {chatOpen && (
+        <PageChat
+          pageTitle={page.title}
+          pageText={page.database ? `قاعدة بيانات بخصائص: ${page.database.properties.map((p) => p.name).join('، ')}` : extractText(page.content)}
+          onClose={() => setChatOpen(false)}
         />
       )}
     </div>

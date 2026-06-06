@@ -284,6 +284,18 @@ export async function deleteRow(id: string) {
   return request<{ deleted: boolean }>(`/api/rows/${id}`, { method: 'DELETE' });
 }
 
+export interface SearchResult {
+  id: string;
+  title: string;
+  icon: string | null;
+  type: string;
+  snippet: string;
+}
+
+export async function searchPages(q: string) {
+  return request<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`);
+}
+
 export async function aiFillProperty(data: {
   property: { name: string; type: string; options?: { id: string; name: string }[] };
   context: Record<string, unknown>;

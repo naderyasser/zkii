@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Search, FileText, Plus, Database as DbIcon } from 'lucide-react';
 import { usePagesTree, useCreatePage } from '@/hooks/usePages';
+import * as api from '@/lib/api';
 import type { WorkspacePageNode } from '@/types';
 
 function flatten(nodes: WorkspacePageNode[], acc: WorkspacePageNode[] = []): WorkspacePageNode[] {
@@ -18,20 +20,28 @@ interface Props {
   onClose: () => void;
 }
 
-// لوحة أوامر/بحث في عناوين الصفحات (المرحلة 7 هتوسّعها لمحتوى الـ blocks)
-// تُركّب فقط وهي مفتوحة (mount-conditional) فالحالة تبدأ نظيفة كل مرة.
+// لوحة أوامر/بحث في عناوين الصفحات + محتوى الـ blocks (server search عبر /api/search)
 export default function WorkspaceCommand({ onClose }: Props) {
   const router = useRouter();
   const { data: tree } = usePagesTree();
   const createPage = useCreatePage();
   const [q, setQ] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
 
-  const allPages = useMemo(() => (tree ? flatten(tree) : []), [tree]);
-  const results = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return allPages.slice(0, 8);
-    return allPages.filter((p) => (p.title || '').toLowerCase().includes(term)).slice(0, 12);
-  }, [q, allPages]);
+  // debounce (setTimeout داخل effect — غير متزامن، مسموح)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim()), 200);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const recent = useMemo(() => (tree ? flatten(tree).slice(0, 8) : []), [tree]);
+
+  const { data: searchResults } = useQuery({
+    queryKey: ['search', debouncedQ],
+    queryFn: () => api.searchPages(debouncedQ),
+    enabled: debouncedQ.length > 0,
+    staleTime: 5_000,
+  });
 
   const go = (id: string) => { onClose(); router.push(`/p/${id}`); };
   const create = async () => {
@@ -39,6 +49,9 @@ export default function WorkspaceCommand({ onClose }: Props) {
     onClose();
     router.push(`/p/${page.id}`);
   };
+
+  const showSearch = debouncedQ.length > 0;
+  const items = showSearch ? (searchResults ?? []) : recent.map((p) => ({ id: p.id, title: p.title, icon: p.icon, type: p.type, snippet: '' }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 pt-[15vh]" onClick={onClose}>
@@ -54,23 +67,29 @@ export default function WorkspaceCommand({ onClose }: Props) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
-            placeholder="ابحث عن صفحة أو أنشئ واحدة…"
+            placeholder="ابحث في الصفحات والمحتوى أو أنشئ صفحة…"
             className="flex-1 bg-transparent py-3 text-sm text-koala-bright outline-none placeholder:text-koala-muted"
           />
         </div>
         <div className="max-h-80 overflow-y-auto kanban-scroll p-1.5">
-          {results.map((p) => (
+          {items.map((p) => (
             <button
               key={p.id}
               onClick={() => go(p.id)}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm text-koala-primary hover:bg-hover"
+              className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-start text-sm text-koala-primary hover:bg-hover"
             >
-              <span className="w-5 text-center text-[15px] leading-none">
+              <span className="mt-0.5 w-5 text-center text-[15px] leading-none">
                 {p.icon || (p.type === 'database' ? <DbIcon size={15} className="inline text-koala-secondary" /> : <FileText size={15} className="inline text-koala-secondary" />)}
               </span>
-              <span className="flex-1 truncate">{p.title || 'بدون عنوان'}</span>
+              <span className="flex-1 overflow-hidden">
+                <span className="block truncate">{p.title || 'بدون عنوان'}</span>
+                {p.snippet && <span className="block truncate text-xs text-koala-muted">{p.snippet}</span>}
+              </span>
             </button>
           ))}
+          {showSearch && items.length === 0 && (
+            <p className="px-2.5 py-2 text-xs text-koala-muted">لا نتائج لـ «{debouncedQ}»</p>
+          )}
           <button
             onClick={create}
             className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm text-accent-blue hover:bg-hover"
@@ -80,7 +99,7 @@ export default function WorkspaceCommand({ onClose }: Props) {
           </button>
         </div>
         <div className="border-t border-border-subtle px-3 py-1.5 text-[11px] text-koala-muted">
-          ↵ للفتح · Esc للإغلاق
+          ↵ للفتح · Esc للإغلاق · بحث في العناوين والمحتوى
         </div>
       </div>
     </div>
