@@ -4,11 +4,28 @@ import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FileText, Sparkles } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
+import { useTheme } from 'next-themes';
 import DatabaseView from './database/DatabaseView';
 import PageChat from './PageChat';
 import PageIcon from './PageIcon';
+import PageCover from './PageCover';
 import { Skeleton } from '@/components/ui-koala/Skeleton';
 import type { PartialBlock } from '@blocknote/core';
+import type { PagePalette } from '@/types';
+
+function paletteVars(paletteJson: string | null, isDark: boolean): React.CSSProperties {
+  if (!paletteJson) return {};
+  try {
+    const p = JSON.parse(paletteJson) as PagePalette;
+    return {
+      '--page-accent': isDark ? p.accentDark : p.accentLight,
+      '--page-tint': isDark ? p.tintDark : p.tintLight,
+      background: 'var(--page-tint)',
+    } as React.CSSProperties;
+  } catch {
+    return {};
+  }
+}
 
 // استخراج نص مقروء من محتوى BlockNote (للشات بسياق الصفحة)
 function extractText(content: string | null): string {
@@ -52,6 +69,7 @@ const EMOJI_CHOICES = ['📄', '📝', '📋', '📁', '🎯', '🔁', '📊', '
 export default function PageView({ pageId }: { pageId: string }) {
   const { data: page, isLoading } = usePage(pageId);
   const updatePage = useUpdatePage();
+  const { resolvedTheme } = useTheme();
 
   const [title, setTitle] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
@@ -99,13 +117,19 @@ export default function PageView({ pageId }: { pageId: string }) {
     updatePage.mutate({ id: page.id, data: { icon: emoji } });
   };
 
+  const isDark = resolvedTheme === 'dark';
+
   return (
+    <div className="museum-page-root min-h-full transition-colors" style={paletteVars(page.palette, isDark)}>
     <div className="mx-auto max-w-3xl px-6 py-12">
+      {/* Cover (برواز المتحف) */}
+      <PageCover pageId={page.id} coverUrl={page.coverUrl} coverMeta={page.coverMeta} />
+
       {/* اسأل زكي عن الصفحة */}
       <div className="mb-2 flex justify-start">
         <button
           onClick={() => setChatOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1 text-xs text-koala-secondary hover:border-border-default hover:text-accent-blue"
+          className="flex items-center gap-1.5 rounded-[var(--radius)] border border-border-subtle bg-surface px-3 py-1 text-xs text-koala-secondary hover:border-museum-gold hover:text-museum-gold-deep"
         >
           <Sparkles size={13} /> اسأل زكي عن الصفحة
         </button>
@@ -165,6 +189,7 @@ export default function PageView({ pageId }: { pageId: string }) {
           onClose={() => setChatOpen(false)}
         />
       )}
+    </div>
     </div>
   );
 }

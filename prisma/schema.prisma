@@ -199,8 +199,10 @@ model HabitLog {
 model Page {
   id         String    @id @default(cuid())
   title      String    @default("بدون عنوان")
-  icon       String? // emoji
+  icon       String? // emoji أو "lucide:Name"
   coverUrl   String?
+  coverMeta  String? // JSON: {title,artist,year,source} لغلاف Met
+  palette    String? // JSON: {accentLight,accentDark,tint,swatches[]} مستخرج من الغلاف
   parentId   String?
   parent     Page?     @relation("PageTree", fields: [parentId], references: [id])
   children   Page[]    @relation("PageTree")

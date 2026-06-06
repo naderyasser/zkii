@@ -284,6 +284,29 @@ export async function deleteRow(id: string) {
   return request<{ deleted: boolean }>(`/api/rows/${id}`, { method: 'DELETE' });
 }
 
+/* ─── Art (Met covers) ─────────────────────────────────── */
+export interface ArtResult {
+  objectID: number;
+  title: string;
+  artist: string;
+  year: string;
+  imageUrl: string;
+}
+
+export async function getRandomArt(excludeId?: number) {
+  return request<ArtResult>(`/api/art/random${excludeId ? `?exclude=${excludeId}` : ''}`);
+}
+
+export async function setPageCover(
+  id: string,
+  data: { coverUrl: string | null; coverMeta?: { objectID?: number; title: string; artist: string; year: string; source?: string } }
+) {
+  return request<WorkspacePage>(`/api/pages/${id}/cover`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 export interface SearchResult {
   id: string;
   title: string;

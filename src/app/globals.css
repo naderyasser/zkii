@@ -378,13 +378,33 @@ svg.lucide {
 .zaki-editor h3 {
   font-family: var(--font-amiri), serif;
 }
-/* اقتباس: حد جانبي ذهبي 2px (radius 0) + Amiri مايل */
+/* اقتباس: حد جانبي 2px من accent الصفحة (افتراضي ذهبي/نبيتي) + Amiri مايل */
 .zaki-editor blockquote,
 .zaki-editor [data-content-type='quote'] {
-  border-inline-start: 2px solid var(--museum-gold);
+  border-inline-start: 2px solid var(--page-accent, var(--museum-gold));
   border-radius: 0;
   font-family: var(--font-amiri), serif;
   font-style: italic;
   padding-inline-start: 0.9rem;
   color: var(--museum-ink);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PER-PAGE ACCENT — لون اللوحة يلوّن عناصر محدّدة فقط (روابط/checkbox/اقتباس/
+   قيمة الحالة/selection). الذهبي والحبر وAmiri ثوابت في كل الصفحات.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.museum-page-root {
+  --page-accent: var(--museum-burgundy); /* افتراضي: صفحة بدون غلاف */
+}
+.museum-page-root a {
+  color: var(--page-accent);
+}
+.museum-page-root input[type='checkbox'] {
+  accent-color: var(--page-accent);
+}
+.museum-page-root .accent-value {
+  color: var(--page-accent);
+}
+.museum-page-root ::selection {
+  background: color-mix(in srgb, var(--page-accent) 28%, transparent);
 }

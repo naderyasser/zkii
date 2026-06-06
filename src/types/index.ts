@@ -199,11 +199,29 @@ export interface ViewDef {
   groupBy?: string | null;
 }
 
+export interface PagePalette {
+  accentLight: string;
+  accentDark: string;
+  tintLight: string;
+  tintDark: string;
+  swatches: string[];
+}
+
+export interface ArtMeta {
+  objectID?: number;
+  title: string;
+  artist: string;
+  year: string;
+  source?: string;
+}
+
 export interface WorkspacePage {
   id: string;
   title: string;
   icon: string | null;
   coverUrl: string | null;
+  coverMeta: string | null; // JSON ArtMeta
+  palette: string | null; // JSON PagePalette
   parentId: string | null;
   type: string; // 'page' | 'database'
   content: string | null; // BlockNote JSON string
