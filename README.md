@@ -1,61 +1,93 @@
-# زكي — مساعدك الشخصي الذكي للإنتاجية
+# زكي — Notion-like AI Workspace (عربي/RTL)
 
-تطبيق ويب شامل لإدارة المهام والعادات والمشاريع مع ذكاء اصطناعي متقدم.
+مساحة عمل شبيهة بـ Notion: شجرة صفحات لا نهائية، محرّر blocks، وقواعد بيانات بعروض متعددة —
+مع **ذكاء اصطناعي مدمج في كل مكان** يعمل على **موديل محلي مجاني (Ollama · qwen3:4b-instruct)** بدون أي API خارجي مدفوع.
 
 ## ✨ Features
 
-- 📝 **إدارة المهام الذكية** — مهام مع أولويات، تصنيفات، وتاريخ استحقاق
-- 📊 **لوحة تحليلات** — رؤية شاملة لإنتاجيتك (ECharts)
-- 🎯 **نمط التركيز** — Pomodoro Timer مع task focus
-- 🗂️ **Kanban Board** — تنظيم المهام مع Drag & Drop
-- 📅 **تتبع العادات** — مع نظام Streaks
-- 📁 **إدارة المشاريع** — تجميع المهام حسب المشاريع
-- 🔥 **خريطة الحرارة** — تصور نشاطك السنوي
-- 🗣️ **Chat الذكي** — محادثة بالذكاء الاصطناعي
-- 🎙️ **Voice Input** — إدخال المهام بالصوت (ASR)
-- 🌐 **Web Search** — بحث ويب متكامل في الدردشة
-- 📤 **تصدير CSV** — تصدير بيانات المهام
-- 🏷️ **تصنيفات مخصصة** — وسوم وتصنيفات قابلة للتخصيص
+- 🗂️ **شجرة صفحات** في sidebar (RTL) — عمق لا نهائي، طي، سحب وإفلات للنقل والتداخل، مفضلة، وسلة مهملات (أرشفة/استعادة).
+- 📝 **محرّر Blocks (BlockNote)** — slash menu عربية، حفظ تلقائي، عناوين/قوائم/مهام/كود/جداول…
+- ✨ **أوامر «/زكي» في المحرر** — كمّل · لخّص · حسّن · ترجم · استخرج مهام · اشرح — كلها **streaming** من الموديل المحلي مع «قبول/تراجع».
+- 🧱 **قواعد بيانات بعروض متعددة** — جدول (تحرير inline) · كانبان (DnD) · تقويم · قائمة، وكل صف يفتح كصفحة.
+- 🪄 **املأ بزكي** — توليد/تصنيف قيم الخصائص تلقائياً (structured JSON من الموديل المحلي).
+- 💬 **اسأل زكي عن الصفحة** — شات بسياق محتوى الصفحة الحالية (streaming).
+- 🔍 **بحث Cmd/Ctrl+K** — في عناوين الصفحات **ومحتوى الـ blocks**.
+- 🔒 **خصوصية كاملة** — كل الذكاء self-hosted على نفس السيرفر (localhost فقط)، مع fallback خارجي اختياري.
+- 🧰 الأدوات القديمة (مهام/كانبان/عادات/مشاريع/Pomodoro/heatmap/تحليلات/شات بالـ tools) متاحة على `/legacy`.
 
 ## 🛠️ التقنيات المستخدمة
 
 - **Frontend**: Next.js 16 + React 19 + TypeScript
-- **Styling**: TailwindCSS + Shadcn UI + Radix UI
-- **Database**: SQLite + Prisma ORM
-- **State Management**: Zustand + TanStack React Query
-- **Charts**: ECharts + Recharts
-- **Auth**: NextAuth 4 (Google OAuth)
-- **Drag & Drop**: @dnd-kit
-- **Forms**: React Hook Form + Zod
+- **Editor**: BlockNote (@blocknote/shadcn)
+- **Styling**: TailwindCSS v4 + Shadcn UI + Radix UI (RTL/dark)
+- **Database**: SQLite + Prisma ORM (Page / Database / Row)
+- **State**: Zustand + TanStack React Query
+- **AI**: Ollama محلي (qwen3:4b-instruct) عبر OpenAI-compatible API — كل النداءات في `src/lib/ai.ts`
+- **Drag & Drop**: @dnd-kit · **Charts**: ECharts/Recharts (legacy) · **Auth**: Google OAuth
 
 ## 🚀 البدء السريع
 
 ### المتطلبات
-- Node.js 18+
-- Bun أو npm
+- Node.js 18+ · Bun أو npm
+- **Ollama** (للذكاء المحلي) — السيرفر يُفضّل ≥ 8GB RAM (أو swap)
 
-### التثبيت
+### 1) إعداد الموديل المحلي (Ollama)
 
 ```bash
-# استنساخ المستودع
-git clone https://github.com/naderyasser/zkii.git
-cd zkii
+# تثبيت Ollama (بيسجّل نفسه كـ systemd service)
+curl -fsSL https://ollama.com/install.sh | sh
 
-# تثبيت الحزم
-bun install
+# سحب الموديل (non-thinking، يدعم العربي و tool calling)
+ollama pull qwen3:4b-instruct
 
-# إعداد المتغيرات البيئية
-cp .env.example .env   # ثم املأ المفاتيح
-
-# إعداد قاعدة البيانات
-bun run db:generate
-bun run db:push
-
-# تشغيل خادم التطوير
-bun run dev
+# (اختياري) systemd override: localhost فقط + context أكبر
+#   /etc/systemd/system/ollama.service.d/override.conf
+#   [Service]
+#   Environment="OLLAMA_HOST=127.0.0.1:11434"
+#   Environment="OLLAMA_CONTEXT_LENGTH=8192"
+#   Environment="OLLAMA_KEEP_ALIVE=30m"
 ```
 
-التطبيق سيكون متاحاً على: `http://localhost:1111`
+> ⚠️ لا تعرض بورت Ollama (11434) للإنترنت — `OLLAMA_HOST=127.0.0.1` فقط.
+> على سيرفر بـ RAM محدودة أضِف swap (مثلاً 8GB) لتفادي OOM. الموديل بطيء على CPU، لذلك الشات والمحرر يستخدمان streaming.
+
+### 2) تشغيل التطبيق
+
+```bash
+git clone https://github.com/naderyasser/zkii.git && cd zkii
+bun install
+cp .env.example .env          # واملأ المفاتيح (انظر تحت)
+bun run db:generate && bun run db:push
+bun run migrate:pages         # (مرة واحدة) نقل بيانات المهام/المشاريع/العادات القديمة لصفحات
+bun run dev                   # تطوير
+```
+
+التطبيق على: `http://localhost:1111`
+
+### 3) متغيّرات الذكاء في `.env`
+
+```env
+# المزوّد الأساسي (محلي عبر Ollama)
+AI_BASE_URL=http://127.0.0.1:11434/v1
+AI_API_KEY=ollama
+AI_MODEL=qwen3:4b-instruct
+
+# مزوّد احتياطي اختياري (يُستخدم تلقائياً لو المحلي فشل) — اتركه فارغاً للتشغيل المحلي فقط
+AI_FALLBACK_BASE_URL=
+AI_FALLBACK_API_KEY=
+AI_FALLBACK_MODEL=
+```
+
+### النشر (production / systemd)
+
+```bash
+bun run build
+# zakii.service: EnvironmentFile=-/root/zkii/.env · After=ollama.service · Restart=always
+sudo systemctl restart zakii
+```
+
+> `DATABASE_URL` في `.env` لازم يكون **مساراً مطلقاً** (مثلاً `file:/root/zkii/db/custom.db`)
+> لأن `EnvironmentFile` في systemd بيغلب الإعداد الصريح. Caddy يعمل reverse proxy لبورت 1111 على الدومين (HTTPS).
 
 ## 📂 البنية
 
