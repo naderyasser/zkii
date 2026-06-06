@@ -251,3 +251,12 @@
 .kanban-scroll-x::-webkit-scrollbar-thumb:hover {
   background: var(--border-default);
 }
+
+/* ─── BlockNote editor: خط عربي (Cairo) + اتجاه RTL ─────────────────────────── */
+.zaki-editor .bn-editor,
+.zaki-editor .bn-container {
+  font-family: var(--font-cairo), system-ui, sans-serif;
+}
+.zaki-editor .bn-block-content {
+  text-align: start;
+}

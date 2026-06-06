@@ -1,8 +1,26 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { FileText, Loader2 } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
+import type { PartialBlock } from '@blocknote/core';
+
+// المحرّر يُحمّل ديناميكياً بدون SSR (BlockNote يحتاج DOM)
+const PageEditor = dynamic(() => import('./PageEditor'), {
+  ssr: false,
+  loading: () => <div className="py-6 text-sm text-koala-secondary">…تحميل المحرّر</div>,
+});
+
+function parseContent(content: string | null): PartialBlock[] | undefined {
+  if (!content) return undefined;
+  try {
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) && parsed.length ? (parsed as PartialBlock[]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 const EMOJI_CHOICES = ['📄', '📝', '📋', '📁', '🎯', '🔁', '📊', '💡', '🚀', '🔥', '⭐', '✅', '📅', '🧠', '💬', '🗂️'];
 
@@ -93,12 +111,11 @@ export default function PageView({ pageId }: { pageId: string }) {
           <div className="mt-1 text-xs text-koala-muted">الخصائص: {page.database.properties.map((p) => p.name).join('، ')}</div>
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border-default p-8 text-center text-sm text-koala-secondary">
-          محرّر الـ blocks (BlockNote) جايّ في المرحلة 4. اكتب «/» قريباً للأوامر.
-          {page.content && (
-            <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap text-start text-xs text-koala-muted">{page.content}</pre>
-          )}
-        </div>
+        <PageEditor
+          key={page.id}
+          initialContent={parseContent(page.content)}
+          onSave={(json) => updatePage.mutate({ id: page.id, data: { content: json } })}
+        />
       )}
     </div>
   );
