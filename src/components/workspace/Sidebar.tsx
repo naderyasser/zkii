@@ -3,9 +3,10 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import {
-  Search, Plus, Star, Trash2, PanelRightClose, Terminal,
-  LayoutGrid, Home as HomeIcon, Wrench,
+  Search, Plus, Star, Trash2, PanelRightClose, Landmark,
+  Home as HomeIcon, Wrench, Sun, Moon,
 } from 'lucide-react';
 import { usePagesTree, useCreatePage } from '@/hooks/usePages';
 import type { WorkspacePageNode } from '@/types';
@@ -42,8 +43,8 @@ export default function Sidebar({ onOpenSearch, onCollapse }: SidebarProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <Link href="/" className="flex items-center gap-2 text-koala-bright">
-          <Terminal size={16} className="text-accent-blue" />
-          <span className="text-sm font-semibold">زكي</span>
+          <Landmark size={17} className="text-museum-gold" />
+          <span className="font-amiri text-lg font-bold">زكي</span>
         </Link>
         <button
           onClick={onCollapse}
@@ -123,9 +124,24 @@ export default function Sidebar({ onOpenSearch, onCollapse }: SidebarProps) {
           className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-koala-secondary hover:bg-hover hover:text-koala-bright"
         >
           <Wrench size={14} /> <span>الأدوات القديمة</span>
-          <LayoutGrid size={12} className="ms-auto text-koala-muted" />
         </Link>
+        <ThemeToggle />
       </div>
     </aside>
+  );
+}
+
+// مبدّل النهار/الليل
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
+  return (
+    <button
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-koala-secondary hover:bg-hover hover:text-koala-bright"
+    >
+      {isDark ? <Sun size={14} /> : <Moon size={14} />}
+      <span>{isDark ? 'قاعة النهار' : 'المتحف بالليل'}</span>
+    </button>
   );
 }

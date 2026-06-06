@@ -12,7 +12,8 @@ export function Skeleton({ className, width, height }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-shimmer rounded-md bg-border-subtle',
+        // بلوك flat بدون حركة لانهائية (التزاماً بقواعد الحركة)
+        'rounded-[var(--radius)] bg-elevated/70',
         className
       )}
       style={{

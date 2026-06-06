@@ -1,32 +1,36 @@
 import type { Metadata } from "next";
-import { Cairo, Inter, JetBrains_Mono } from "next/font/google";
+import { Amiri, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/components/QueryProvider";
+import ThemeProvider from "@/components/ThemeProvider";
 
-const cairo = Cairo({
-  variable: "--font-cairo",
+// Amiri — صوت الهوية (عناوين/اقتباسات)
+const amiri = Amiri({
+  variable: "--font-amiri",
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+// IBM Plex Sans Arabic — نص الواجهة والجسم
+const ibmPlex = IBM_Plex_Sans_Arabic({
+  variable: "--font-ibm-plex",
+  subsets: ["arabic", "latin"],
   weight: ["400", "500", "600"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
+// IBM Plex Mono — الكود
+const ibmMono = IBM_Plex_Mono({
+  variable: "--font-ibm-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "زكي — مساعدك الشخصي",
-  description: "زكي — مساعدك الشخصي الذكي للإنتاجية",
+  title: "زكي — مساحة عمل",
+  description: "زكي — مساحة عمل ذكية بهوية المتحف الكلاسيكي",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
 };
 
@@ -36,14 +40,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${cairo.variable} ${inter.variable} ${jetbrainsMono.variable} font-[family-name:var(--font-cairo)] antialiased bg-background text-foreground`}
+        className={`${amiri.variable} ${ibmPlex.variable} ${ibmMono.variable} font-[family-name:var(--font-ibm-plex)] antialiased bg-background text-foreground`}
       >
-        <QueryProvider>
-          {children}
-        </QueryProvider>
-        <Toaster />
+        <ThemeProvider>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
