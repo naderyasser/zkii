@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FileText, Loader2 } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
+import DatabaseView from './database/DatabaseView';
 import type { PartialBlock } from '@blocknote/core';
 
 // المحرّر يُحمّل ديناميكياً بدون SSR (BlockNote يحتاج DOM)
@@ -106,10 +107,7 @@ export default function PageView({ pageId }: { pageId: string }) {
 
       {/* Content area — placeholder حتى المرحلة 4 (المحرر) / 5 (قاعدة البيانات) */}
       {page.database ? (
-        <div className="rounded-xl border border-dashed border-border-default p-8 text-center text-sm text-koala-secondary">
-          قاعدة بيانات — العروض (جدول/كانبان/تقويم) جاية في المرحلة 5.
-          <div className="mt-1 text-xs text-koala-muted">الخصائص: {page.database.properties.map((p) => p.name).join('، ')}</div>
-        </div>
+        <DatabaseView databaseId={page.database.id} />
       ) : (
         <PageEditor
           key={page.id}
