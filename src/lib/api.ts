@@ -189,6 +189,101 @@ export async function exportTasksCSV() {
   return res.text();
 }
 
+/* ─── Workspace Pages ──────────────────────────────────── */
+export async function getPagesTree() {
+  return request<WorkspacePageNode[]>('/api/pages?view=tree');
+}
+
+export async function getPagesFlat() {
+  return request<WorkspacePage[]>('/api/pages?view=flat');
+}
+
+export async function getTrashPages() {
+  return request<WorkspacePage[]>('/api/pages?archived=1');
+}
+
+export async function getPage(id: string) {
+  return request<PageWithDatabase>(`/api/pages/${id}`);
+}
+
+export async function createPage(data: {
+  title?: string;
+  icon?: string;
+  parentId?: string | null;
+  type?: 'page' | 'database';
+  coverUrl?: string;
+}) {
+  return request<WorkspacePage>('/api/pages', {
+    method: 'POST',
+    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+  });
+}
+
+export async function updatePage(
+  id: string,
+  data: Partial<{ title: string; icon: string | null; coverUrl: string | null; content: string; isFavorite: boolean }>
+) {
+  return request<WorkspacePage>(`/api/pages/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function archivePage(id: string) {
+  return request<{ archived: boolean; count: number }>(`/api/pages/${id}`, { method: 'DELETE' });
+}
+
+export async function hardDeletePage(id: string) {
+  return request<{ deleted: boolean }>(`/api/pages/${id}?hard=1`, { method: 'DELETE' });
+}
+
+export async function movePage(id: string, data: { parentId?: string | null; position?: number }) {
+  return request<WorkspacePage>(`/api/pages/${id}/move`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function restorePage(id: string) {
+  return request<{ restored: boolean; count: number }>(`/api/pages/${id}/restore`, { method: 'POST' });
+}
+
+/* ─── Workspace Databases & Rows ───────────────────────── */
+export async function getDatabase(id: string) {
+  return request<DatabaseWithRows>(`/api/databases/${id}`);
+}
+
+export async function updateDatabase(
+  id: string,
+  data: Partial<{ properties: PropertyDef[]; views: ViewDef[] }>
+) {
+  return request<WorkspaceDatabase>(`/api/databases/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function createRow(databaseId: string, properties: Record<string, unknown> = {}) {
+  return request<WorkspaceRow>(`/api/databases/${databaseId}/rows`, {
+    method: 'POST',
+    body: JSON.stringify({ properties }),
+  });
+}
+
+export async function updateRow(
+  id: string,
+  data: { properties?: Record<string, unknown>; position?: number; pageId?: string | null; replaceProperties?: boolean }
+) {
+  return request<WorkspaceRow>(`/api/rows/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRow(id: string) {
+  return request<{ deleted: boolean }>(`/api/rows/${id}`, { method: 'DELETE' });
+}
+
 /* ─── Type imports for return types ────────────────────── */
 import type {
   Task,
@@ -203,4 +298,12 @@ import type {
   HabitLog as HabitLogType,
   CreateHabitInput,
   Project as ProjectType,
+  WorkspacePage,
+  WorkspacePageNode,
+  PageWithDatabase,
+  WorkspaceDatabase,
+  DatabaseWithRows,
+  WorkspaceRow,
+  PropertyDef,
+  ViewDef,
 } from '@/types';
