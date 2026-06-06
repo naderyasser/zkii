@@ -20,7 +20,7 @@ export default function RowPeek({ row, properties, titleId, onClose, onChange, o
       <div className="flex-1 bg-black/40" />
       <aside
         dir="rtl"
-        className="h-full w-full max-w-md overflow-y-auto kanban-scroll border-s border-border-default bg-surface p-5 shadow-2xl animate-in slide-in-from-left"
+        className="h-full w-full max-w-md overflow-y-auto kanban-scroll border-s border-border-default bg-surface p-5 shadow-[var(--shadow-museum)] animate-in slide-in-from-left"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

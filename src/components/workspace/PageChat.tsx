@@ -63,7 +63,7 @@ ${pageText.slice(0, 4000) || '(الصفحة فاضية)'}
       <div className="flex-1" />
       <aside
         dir="rtl"
-        className="flex h-full w-full max-w-sm flex-col border-s border-border-default bg-surface shadow-2xl animate-in slide-in-from-left"
+        className="flex h-full w-full max-w-sm flex-col border-s border-border-default bg-surface shadow-[var(--shadow-museum)] animate-in slide-in-from-left"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">

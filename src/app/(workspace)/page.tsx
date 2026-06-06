@@ -3,9 +3,10 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, FileText, Database as DbIcon, Sparkles, Clock } from 'lucide-react';
+import { Plus, Sparkles, Clock } from 'lucide-react';
 import * as api from '@/lib/api';
 import { useCreatePage } from '@/hooks/usePages';
+import PageIcon from '@/components/workspace/PageIcon';
 import type { WorkspacePage } from '@/types';
 
 export default function WorkspaceHome() {
@@ -49,7 +50,7 @@ export default function WorkspaceHome() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-koala-bright">أهلاً في مساحتك 👋</h1>
+        <h1 className="font-amiri text-3xl font-bold text-koala-bright">أهلاً في مساحتك</h1>
         <p className="mt-1 text-sm text-koala-secondary">
           نظّم أفكارك ومهامك في صفحات وقواعد بيانات — مع زكي في كل مكان.
         </p>
@@ -96,9 +97,7 @@ export default function WorkspaceHome() {
                 onClick={() => router.push(`/p/${p.id}`)}
                 className="flex items-center gap-2.5 rounded-lg border border-border-subtle bg-surface px-3 py-3 text-start hover:border-border-default hover:bg-elevated"
               >
-                <span className="text-lg leading-none">
-                  {p.icon || (p.type === 'database' ? <DbIcon size={18} className="text-koala-secondary" /> : <FileText size={18} className="text-koala-secondary" />)}
-                </span>
+                <span className="flex items-center justify-center"><PageIcon icon={p.icon} size={18} /></span>
                 <span className="flex-1 truncate text-sm text-koala-primary">{p.title || 'بدون عنوان'}</span>
               </button>
             ))}

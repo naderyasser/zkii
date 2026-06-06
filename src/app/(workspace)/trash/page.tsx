@@ -19,7 +19,7 @@ export default function TrashPage() {
         <p className="text-sm text-koala-secondary">…تحميل</p>
       ) : !pages || pages.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border-default p-10 text-center text-sm text-koala-secondary">
-          السلة فاضية ✨
+          السلة فاضية
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">

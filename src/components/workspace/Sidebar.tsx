@@ -11,6 +11,7 @@ import {
 import { usePagesTree, useCreatePage } from '@/hooks/usePages';
 import type { WorkspacePageNode } from '@/types';
 import SidebarTree from './SidebarTree';
+import PageIcon from './PageIcon';
 
 function flattenFavorites(nodes: WorkspacePageNode[], acc: WorkspacePageNode[] = []): WorkspacePageNode[] {
   for (const n of nodes) {
@@ -84,7 +85,7 @@ export default function Sidebar({ onOpenSearch, onCollapse }: SidebarProps) {
         {/* Favorites */}
         {favorites.length > 0 && (
           <div className="mb-3">
-            <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium text-koala-muted">
+            <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.05em] text-museum-gold-deep">
               <Star size={11} /> المفضلة
             </div>
             <div className="flex flex-col">
@@ -94,7 +95,7 @@ export default function Sidebar({ onOpenSearch, onCollapse }: SidebarProps) {
                   onClick={() => router.push(`/p/${f.id}`)}
                   className={`flex items-center gap-2 rounded-md px-2 py-[5px] text-[13px] text-start hover:bg-hover ${pathname === `/p/${f.id}` ? 'bg-elevated text-koala-bright' : 'text-koala-primary'}`}
                 >
-                  <span className="w-[18px] text-center text-[14px] leading-none">{f.icon || '⭐'}</span>
+                  <span className="flex w-[18px] items-center justify-center"><PageIcon icon={f.icon} size={14} /></span>
                   <span className="flex-1 truncate">{f.title || 'بدون عنوان'}</span>
                 </button>
               ))}
@@ -103,7 +104,7 @@ export default function Sidebar({ onOpenSearch, onCollapse }: SidebarProps) {
         )}
 
         {/* Pages tree */}
-        <div className="px-2 py-1 text-[11px] font-medium text-koala-muted">الصفحات</div>
+        <div className="px-2 py-1 text-[11px] font-medium uppercase tracking-[0.05em] text-museum-gold-deep">الصفحات</div>
         {isLoading ? (
           <p className="px-2 py-2 text-xs text-koala-secondary">…تحميل</p>
         ) : (

@@ -93,7 +93,7 @@ export default function PropertyCell({ def, value, onChange, autoFocus }: Props)
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute z-20 mt-1 min-w-[140px] rounded-lg border border-border-default bg-surface p-1 shadow-xl">
+              <div className="absolute z-20 mt-1 min-w-[140px] rounded-lg border border-border-default bg-surface p-1 shadow-[var(--shadow-museum)]">
                 {(def.options || []).map((o) => (
                   <button
                     key={o.id}
@@ -140,7 +140,7 @@ export default function PropertyCell({ def, value, onChange, autoFocus }: Props)
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute z-20 mt-1 min-w-[140px] rounded-lg border border-border-default bg-surface p-1 shadow-xl">
+              <div className="absolute z-20 mt-1 min-w-[140px] rounded-lg border border-border-default bg-surface p-1 shadow-[var(--shadow-museum)]">
                 {(def.options || []).map((o) => (
                   <button key={o.id} onClick={() => toggle(o.id)} className="flex w-full items-center gap-2 rounded px-2 py-1 text-start text-xs hover:bg-hover">
                     <span className="h-2.5 w-2.5 rounded-full" style={{ background: o.color || '#565f89' }} />

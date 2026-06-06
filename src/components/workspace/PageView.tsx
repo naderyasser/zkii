@@ -6,6 +6,7 @@ import { FileText, Sparkles } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
 import DatabaseView from './database/DatabaseView';
 import PageChat from './PageChat';
+import PageIcon from './PageIcon';
 import { Skeleton } from '@/components/ui-koala/Skeleton';
 import type { PartialBlock } from '@blocknote/core';
 
@@ -114,13 +115,13 @@ export default function PageView({ pageId }: { pageId: string }) {
       <div className="relative mb-6">
         <button
           onClick={() => setShowEmoji((v) => !v)}
-          className="mb-2 flex h-14 w-14 items-center justify-center rounded-lg text-4xl hover:bg-hover"
+          className="mb-2 flex h-14 w-14 items-center justify-center rounded-[var(--radius)] hover:bg-hover"
           title="تغيير الأيقونة"
         >
-          {page.icon || <FileText size={32} className="text-koala-secondary" />}
+          <PageIcon icon={page.icon} size={36} className="text-koala-primary" />
         </button>
         {showEmoji && (
-          <div className="absolute z-20 grid grid-cols-8 gap-1 rounded-lg border border-border-default bg-surface p-2 shadow-xl">
+          <div className="absolute z-20 grid grid-cols-8 gap-1 rounded-lg border border-border-default bg-surface p-2 shadow-[var(--shadow-museum)]">
             {EMOJI_CHOICES.map((e) => (
               <button key={e} onClick={() => pickEmoji(e)} className="rounded p-1.5 text-xl hover:bg-hover">
                 {e}
@@ -142,7 +143,7 @@ export default function PageView({ pageId }: { pageId: string }) {
           }}
           rows={1}
           placeholder="بدون عنوان"
-          className="w-full resize-none overflow-hidden bg-transparent text-3xl font-bold text-koala-bright outline-none placeholder:text-koala-muted"
+          className="font-amiri w-full resize-none overflow-hidden bg-transparent text-[36px] font-bold leading-tight text-koala-bright outline-none placeholder:text-koala-muted"
         />
       </div>
 

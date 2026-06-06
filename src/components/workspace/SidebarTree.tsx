@@ -18,9 +18,10 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronRight, ChevronDown, Plus, Star, Trash2, FileText, Database as DbIcon } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Star, Trash2 } from 'lucide-react';
 import { flattenTree, getProjection, computePosition, type FlatItem } from '@/lib/tree';
 import { useMovePage, useCreatePage, useArchivePage, useUpdatePage } from '@/hooks/usePages';
+import PageIcon from './PageIcon';
 import type { WorkspacePageNode } from '@/types';
 
 const INDENT = 14;
@@ -69,8 +70,8 @@ function TreeRow({ item, depth, active, onToggle, onNavigate, onAddChild, onArch
         <span className="h-4 w-4 shrink-0" />
       )}
 
-      <span className="shrink-0 text-[14px] leading-none w-[18px] text-center" onClick={() => onNavigate(item.id)}>
-        {node.icon || (node.type === 'database' ? <DbIcon size={14} className="inline text-koala-secondary" /> : <FileText size={14} className="inline text-koala-secondary" />)}
+      <span className="flex w-[18px] shrink-0 items-center justify-center" onClick={() => onNavigate(item.id)}>
+        <PageIcon icon={node.icon} size={14} />
       </span>
 
       <span className="flex-1 truncate" onClick={() => onNavigate(item.id)}>
@@ -162,7 +163,7 @@ export default function SidebarTree({ tree }: { tree: WorkspacePageNode[] }) {
   };
 
   if (flat.length === 0) {
-    return <p className="px-2 py-3 text-xs text-koala-secondary">لا توجد صفحات بعد. ابدأ بإنشاء صفحة ✨</p>;
+    return <p className="px-2 py-3 text-xs text-koala-secondary">لا توجد صفحات بعد. ابدأ بإنشاء صفحة جديدة</p>;
   }
 
   return (

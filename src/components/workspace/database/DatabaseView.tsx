@@ -136,7 +136,7 @@ export default function DatabaseView({ databaseId }: { databaseId: string }) {
         ))}
         <div className="group relative">
           <button className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-koala-muted hover:bg-hover"><Plus size={13} /> عرض</button>
-          <div className="absolute z-20 mt-1 hidden min-w-[130px] rounded-lg border border-border-default bg-surface p-1 shadow-xl group-hover:block">
+          <div className="absolute z-20 mt-1 hidden min-w-[130px] rounded-lg border border-border-default bg-surface p-1 shadow-[var(--shadow-museum)] group-hover:block">
             {(['table', 'kanban', 'calendar', 'list'] as ViewType[]).map((t) => (
               <button key={t} onClick={() => addView(t)} className="flex w-full items-center gap-2 rounded px-2 py-1 text-start text-xs text-koala-primary hover:bg-hover">
                 {VIEW_ICON[t]} {VIEW_LABEL[t]}

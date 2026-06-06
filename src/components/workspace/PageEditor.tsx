@@ -11,7 +11,11 @@ import {
 import { BlockNoteView } from '@blocknote/shadcn';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/shadcn/style.css';
-import { Sparkles, Check, Undo2, Loader2 } from 'lucide-react';
+import {
+  Sparkles, Check, Undo2, Loader2,
+  PenLine, FileText, Wand2, Languages, ListChecks, Lightbulb, type LucideIcon,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { streamAI, buildZakiStream, type ZakiCommand } from '@/lib/ai-client';
 import * as api from '@/lib/api';
 
@@ -21,15 +25,15 @@ const useCb = useCallback;
 interface ZakiItem {
   key: ZakiCommand;
   title: string;
-  emoji: string;
+  Icon: LucideIcon;
 }
 const ZAKI_ITEMS: ZakiItem[] = [
-  { key: 'complete', title: 'كمّل الكتابة', emoji: '✍️' },
-  { key: 'summarize', title: 'لخّص', emoji: '📝' },
-  { key: 'improve', title: 'حسّن الصياغة', emoji: '🪄' },
-  { key: 'translate', title: 'ترجم (عربي↔إنجليزي)', emoji: '🌐' },
-  { key: 'extractTasks', title: 'استخرج مهام', emoji: '✅' },
-  { key: 'explain', title: 'اشرح ببساطة', emoji: '🧠' },
+  { key: 'complete', title: 'كمّل الكتابة', Icon: PenLine },
+  { key: 'summarize', title: 'لخّص', Icon: FileText },
+  { key: 'improve', title: 'حسّن الصياغة', Icon: Wand2 },
+  { key: 'translate', title: 'ترجم (عربي↔إنجليزي)', Icon: Languages },
+  { key: 'extractTasks', title: 'استخرج مهام', Icon: ListChecks },
+  { key: 'explain', title: 'اشرح ببساطة', Icon: Lightbulb },
 ];
 
 interface Props {
@@ -38,6 +42,7 @@ interface Props {
 }
 
 export default function PageEditor({ initialContent, onSave }: Props) {
+  const { resolvedTheme } = useTheme();
   const editor = useCreateBlockNote({ initialContent: initialContent?.length ? initialContent : undefined });
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,14 +67,14 @@ export default function PageEditor({ initialContent, onSave }: Props) {
       const ref = editor.getTextCursorPosition().block;
       const newId = `zaki-${Date.now()}`;
       editor.insertBlocks(
-        [{ id: newId, type: 'paragraph', content: '⏳ زكي بيكتب…' }],
+        [{ id: newId, type: 'paragraph', content: 'زكي بيكتب…' }],
         ref,
         'after'
       );
       let acc = '';
       await streamAI(buildZakiStream(cmd, inputText), (chunk) => {
         acc += chunk;
-        editor.updateBlock(newId, { content: acc.trim() || '⏳ زكي بيكتب…' });
+        editor.updateBlock(newId, { content: acc.trim() || 'زكي بيكتب…' });
       });
       const finalText = acc.trim();
 
@@ -111,8 +116,8 @@ export default function PageEditor({ initialContent, onSave }: Props) {
         title: `زكي: ${it.title}`,
         subtext: 'بالذكاء الاصطناعي المحلي',
         aliases: ['زكي', 'zaki', 'ai', it.key],
-        group: 'زكي ✨',
-        icon: <span className="text-base">{it.emoji}</span>,
+        group: 'زكي',
+        icon: <it.Icon size={17} className="text-museum-gold-deep" />,
         onItemClick: () => runZaki(it.key),
       }));
       return filterSuggestionItems([...getDefaultReactSlashMenuItems(editor), ...zaki], query);
@@ -124,7 +129,7 @@ export default function PageEditor({ initialContent, onSave }: Props) {
     <div dir="rtl" className="zaki-editor relative">
       <BlockNoteView
         editor={editor}
-        theme="dark"
+        theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
         slashMenu={false}
         onChange={handleChange}
       >
@@ -133,7 +138,7 @@ export default function PageEditor({ initialContent, onSave }: Props) {
 
       {/* شريط حالة/قبول-تراجع لأوامر زكي */}
       {(busy || pendingIds) && (
-        <div className="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-default bg-surface px-3 py-1.5 text-xs shadow-xl">
+        <div className="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-md border border-museum-gold bg-surface px-3 py-1.5 text-xs shadow-[var(--shadow-museum)]">
           {busy ? (
             <span className="flex items-center gap-1.5 text-koala-secondary">
               <Loader2 size={13} className="animate-spin" /> زكي بيشتغل…
@@ -142,10 +147,10 @@ export default function PageEditor({ initialContent, onSave }: Props) {
             <>
               <Sparkles size={13} className="text-accent-blue" />
               <span className="text-koala-secondary">ناتج زكي</span>
-              <button onClick={acceptAI} className="flex items-center gap-1 rounded-full bg-elevated px-2 py-1 text-koala-green hover:bg-hover">
+              <button onClick={acceptAI} className="flex items-center gap-1 rounded-[var(--radius)] bg-elevated px-2 py-1 text-koala-green hover:bg-hover">
                 <Check size={12} /> قبول
               </button>
-              <button onClick={undoAI} className="flex items-center gap-1 rounded-full bg-elevated px-2 py-1 text-coral hover:bg-hover">
+              <button onClick={undoAI} className="flex items-center gap-1 rounded-[var(--radius)] bg-elevated px-2 py-1 text-coral hover:bg-hover">
                 <Undo2 size={12} /> تراجع
               </button>
             </>
