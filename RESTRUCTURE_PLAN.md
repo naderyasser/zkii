@@ -103,7 +103,10 @@
   - `PageChat` — زر «اسأل زكي عن الصفحة» يفتح slide-over بيبعت محتوى الصفحة كـ context عبر streaming (`/api/ai/stream`) + اقتراحات.
   - اختصارات: Ctrl+K بحث · Ctrl+N صفحة · Ctrl+\ إخفاء الشريط (في `WorkspaceShell`).
   - **تحقّق**: بحث بالعنوان ✓ وبالمحتوى («زعفران» مع snippet) ✓، build ✓.
-- [ ] 8 — Polish
+- [x] 8 — Polish ✓:
+  - optimistic updates: تعديل العنوان/الأيقونة/المفضلة بيظهر فوراً في الـ sidebar (تحديث cache الشجرة) + rollback عند الخطأ · صفوف الـ database optimistic أصلاً.
+  - skeletons: `PageView` بقى skeleton (أيقونة+عنوان+أسطر) بدل spinner · sidebar/database لهم loading states.
+  - empty states عربية (home، trash، tree، database) · المحرر lazy (dynamic، بدون SSR) · build ✓.
 - [ ] 9 — Deployment
 
 ## Smoke Tests النهائية (تُعلَّم في المرحلة 9)

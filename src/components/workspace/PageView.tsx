@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { FileText, Loader2, Sparkles } from 'lucide-react';
+import { FileText, Sparkles } from 'lucide-react';
 import { usePage, useUpdatePage } from '@/hooks/usePages';
 import DatabaseView from './database/DatabaseView';
 import PageChat from './PageChat';
+import { Skeleton } from '@/components/ui-koala/Skeleton';
 import type { PartialBlock } from '@blocknote/core';
 
 // استخراج نص مقروء من محتوى BlockNote (للشات بسياق الصفحة)
@@ -65,8 +66,15 @@ export default function PageView({ pageId }: { pageId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center text-koala-secondary">
-        <Loader2 className="animate-spin" size={20} />
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <Skeleton width="56px" height="56px" className="mb-4 rounded-lg" />
+        <Skeleton width="60%" height="36px" className="mb-8" />
+        <div className="space-y-3">
+          <Skeleton width="100%" height="14px" />
+          <Skeleton width="90%" height="14px" />
+          <Skeleton width="75%" height="14px" />
+          <Skeleton width="85%" height="14px" />
+        </div>
       </div>
     );
   }
