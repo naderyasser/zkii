@@ -64,7 +64,13 @@
 
 ## حالة المراحل
 - [x] **0 — Audit + baseline**: build ✓ / lint ✓ نظيفان. هذه الوثيقة مكتوبة.
-- [ ] **1 — Ollama + qwen3:4b + ai.ts** (CHECKPOINT)
+- [x] **1 — Ollama + qwen3:4b-instruct + ai.ts** (CHECKPOINT ✓ مُتحقَّق):
+  - swap 8GB مُفعّل + persistent (fstab) · vm.swappiness=10.
+  - Ollama 0.30.6 مثبّت، systemd override (localhost · ctx 8192 · keepalive 30m).
+  - الموديل: **qwen3:4b-instruct** (non-thinking 2507) — الأصلي `qwen3:4b` كان hybrid بيفكّر كتير وبطيء على CPU، فاتشال.
+  - `ai.ts`: timeout 180s · `chatCompletionStream()` (SSE) · `stripThink()` · fallback تلقائي لـ `AI_FALLBACK_*`.
+  - الـ system prompt + context في `chat/route.ts` اتقلّلوا من ~4800 → ~400 توكن (CPU prefill كان ~178s).
+  - **تحقّق E2E**: شات بسيط 42s · tool-calling بينشئ مهمة فعلياً في DB 39s · عربي سليم · بدون أي API خارجي.
 - [ ] 2 — Data model (Page/Database/Row) + API
 - [ ] 3 — Layout + Sidebar (شجرة صفحات)
 - [ ] 4 — Block editor (BlockNote) + أوامر /زكي
