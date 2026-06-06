@@ -10,6 +10,9 @@ interface ChatInputProps {
   isPending: boolean;
 }
 
+// التحويل الصوتي (ASR) معطّل افتراضياً — يُفعَّل فقط بضبط NEXT_PUBLIC_ENABLE_ASR=true
+const ASR_ENABLED = process.env.NEXT_PUBLIC_ENABLE_ASR === 'true';
+
 export default function ChatInput({ onSend, isPending }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -114,30 +117,32 @@ export default function ChatInput({ onSend, isPending }: ChatInputProps) {
           dir="rtl"
         />
 
-        {/* Microphone button */}
-        <button
-          type="button"
-          onClick={toggleRecording}
-          disabled={isPending || isTranscribing}
-          className={cn(
-            'flex items-center justify-center size-7 rounded-md transition-all duration-200 shrink-0',
-            isRecording
-              ? 'bg-coral text-white animate-pulse'
-              : isTranscribing
-                ? 'bg-koala-yellow/20 text-koala-yellow'
-                : 'bg-hover text-koala-muted hover:text-koala-bright hover:bg-hover/80',
-            (isPending || isTranscribing) && 'opacity-50 cursor-not-allowed'
-          )}
-          aria-label={isRecording ? 'إيقاف التسجيل' : 'تسجيل صوتي'}
-        >
-          {isTranscribing ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : isRecording ? (
-            <MicOff className="size-3.5" />
-          ) : (
-            <Mic className="size-3.5" />
-          )}
-        </button>
+        {/* Microphone button — يظهر فقط لو ASR مفعّل */}
+        {ASR_ENABLED && (
+          <button
+            type="button"
+            onClick={toggleRecording}
+            disabled={isPending || isTranscribing}
+            className={cn(
+              'flex items-center justify-center size-7 rounded-md transition-all duration-200 shrink-0',
+              isRecording
+                ? 'bg-coral text-white animate-pulse'
+                : isTranscribing
+                  ? 'bg-koala-yellow/20 text-koala-yellow'
+                  : 'bg-hover text-koala-muted hover:text-koala-bright hover:bg-hover/80',
+              (isPending || isTranscribing) && 'opacity-50 cursor-not-allowed'
+            )}
+            aria-label={isRecording ? 'إيقاف التسجيل' : 'تسجيل صوتي'}
+          >
+            {isTranscribing ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : isRecording ? (
+              <MicOff className="size-3.5" />
+            ) : (
+              <Mic className="size-3.5" />
+            )}
+          </button>
+        )}
 
         {/* Send button */}
         <button

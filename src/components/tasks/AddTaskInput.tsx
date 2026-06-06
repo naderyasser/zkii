@@ -11,6 +11,9 @@ import AddTaskForm from '@/components/tasks/AddTaskForm';
 
 type RecordingState = 'idle' | 'recording' | 'transcribing';
 
+// التحويل الصوتي (ASR) معطّل افتراضياً — يُفعَّل فقط بضبط NEXT_PUBLIC_ENABLE_ASR=true
+const ASR_ENABLED = process.env.NEXT_PUBLIC_ENABLE_ASR === 'true';
+
 export default function AddTaskInput() {
   const [quickValue, setQuickValue] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -116,26 +119,28 @@ export default function AddTaskInput() {
           disabled={recordingState !== 'idle'}
         />
 
-        {/* Mic button */}
-        <button
-          onClick={recordingState === 'recording' ? stopRecording : startRecording}
-          disabled={recordingState === 'transcribing'}
-          className={cn(
-            'shrink-0 transition-all duration-200 rounded-md p-1.5',
-            recordingState === 'recording' && 'text-coral bg-coral/15 animate-pulse',
-            recordingState === 'transcribing' && 'text-koala-purple bg-koala-purple/15',
-            recordingState === 'idle' && 'text-koala-secondary hover:text-koala-primary hover:bg-hover',
-          )}
-          aria-label={recordingState === 'recording' ? 'إيقاف التسجيل' : 'تسجيل صوتي'}
-        >
-          {recordingState === 'recording' ? (
-            <Square className="size-4" />
-          ) : recordingState === 'transcribing' ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Mic className="size-4" />
-          )}
-        </button>
+        {/* Mic button — يظهر فقط لو ASR مفعّل */}
+        {ASR_ENABLED && (
+          <button
+            onClick={recordingState === 'recording' ? stopRecording : startRecording}
+            disabled={recordingState === 'transcribing'}
+            className={cn(
+              'shrink-0 transition-all duration-200 rounded-md p-1.5',
+              recordingState === 'recording' && 'text-coral bg-coral/15 animate-pulse',
+              recordingState === 'transcribing' && 'text-koala-purple bg-koala-purple/15',
+              recordingState === 'idle' && 'text-koala-secondary hover:text-koala-primary hover:bg-hover',
+            )}
+            aria-label={recordingState === 'recording' ? 'إيقاف التسجيل' : 'تسجيل صوتي'}
+          >
+            {recordingState === 'recording' ? (
+              <Square className="size-4" />
+            ) : recordingState === 'transcribing' ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Mic className="size-4" />
+            )}
+          </button>
+        )}
 
         <button onClick={openDialog}
           className="text-koala-secondary hover:text-koala-primary transition-colors duration-150 shrink-0"

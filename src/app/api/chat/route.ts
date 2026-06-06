@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import { chatCompletion } from '@/lib/ai';
+import { webSearch, SearchNotConfiguredError } from '@/lib/web-search';
 import { db } from '@/lib/db';
 import {
   DEFAULT_USER_ID,
@@ -433,25 +434,7 @@ async function executeTool(
         const num = Math.min((args.num as number) || 5, 10);
 
         try {
-          const zai = await ZAI.create();
-          const rawResults = await zai.functions.invoke('web_search', {
-            query,
-            num,
-          });
-
-          const searchResults = (rawResults as Array<{
-            name: string;
-            url: string;
-            snippet: string;
-            host_name: string;
-            date: string;
-          }>).map((r) => ({
-            title: r.name,
-            url: r.url,
-            snippet: r.snippet,
-            source: r.host_name,
-            date: r.date,
-          }));
+          const searchResults = await webSearch(query, num);
 
           if (searchResults.length === 0) {
             return {
@@ -473,6 +456,13 @@ async function executeTool(
             },
           };
         } catch (searchError) {
+          if (searchError instanceof SearchNotConfiguredError) {
+            return {
+              tool: 'web_search',
+              status: 'error',
+              message: 'البحث غير مفعّل — لم يتم ضبط SEARCH_API_KEY.',
+            };
+          }
           const errMsg = searchError instanceof Error ? searchError.message : 'Unknown search error';
           return {
             tool: 'web_search',
@@ -872,29 +862,18 @@ export async function POST(request: NextRequest) {
     let currentMessages = [...chatMessages];
 
     for (let round = 0; round < MAX_AGENT_ROUNDS; round++) {
-      const zai = await ZAI.create();
-
       let completion;
       try {
-        // Try with tools first (primary path)
-        completion = await zai.chat.completions.create({
-          messages: currentMessages as any,
-          tools: TOOLS as any,
-          tool_choice: round === 0 ? ('auto' as any) : ('none' as any),
-          thinking: { type: 'disabled' },
-        } as any);
-      } catch {
-        // Fallback: try without tools parameter
-        try {
-          completion = await zai.chat.completions.create({
-            messages: currentMessages as any,
-            thinking: { type: 'disabled' },
-          });
-        } catch (fallbackErr) {
-          console.error('Both LLM calls failed:', fallbackErr);
-          finalReply = finalReply || '[ERR] فشل الاتصال — حاول تاني';
-          break;
-        }
+        // Primary path — call the AI provider with tools (OpenAI-compatible)
+        completion = await chatCompletion({
+          messages: currentMessages,
+          tools: TOOLS,
+          tool_choice: round === 0 ? 'auto' : 'none',
+        });
+      } catch (fallbackErr) {
+        console.error('LLM call failed:', fallbackErr);
+        finalReply = finalReply || '[ERR] فشل الاتصال — حاول تاني';
+        break;
       }
 
       const choice = completion.choices?.[0];
@@ -950,12 +929,10 @@ export async function POST(request: NextRequest) {
 
         // Get the follow-up response from the LLM with tool results
         try {
-          const followUpZai = await ZAI.create();
-          const followUpCompletion = await followUpZai.chat.completions.create({
-            messages: messagesWithToolResults as any,
-            tools: TOOLS as any,
-            thinking: { type: 'disabled' },
-          } as any);
+          const followUpCompletion = await chatCompletion({
+            messages: messagesWithToolResults,
+            tools: TOOLS,
+          });
 
           const followUpChoice = followUpCompletion.choices?.[0];
           const followUpMessage = followUpChoice?.message;

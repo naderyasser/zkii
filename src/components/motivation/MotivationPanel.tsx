@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Sparkles, Download, Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as api from '@/lib/api';
@@ -26,6 +27,11 @@ export default function MotivationPanel() {
   const generateImage = useMutation({
     mutationFn: (prompt: string) => api.generateMotivationImage(prompt),
     onSuccess: (data) => {
+      // الميزة ممكن تكون معطّلة (مفيش مزوّد صور) → نعرض رسالة بديلة بدون كسر
+      if (data.disabled || !data.imageBase64) {
+        toast.info(data.message || 'توليد الصور غير مفعّل حالياً.');
+        return;
+      }
       setImageBase64(data.imageBase64);
     },
   });

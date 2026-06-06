@@ -176,7 +176,7 @@ export async function deleteProject(id: string) {
 
 /* ─── Motivation (AI Image Generation) ──────────────────── */
 export async function generateMotivationImage(prompt: string) {
-  return request<{ success: boolean; imageBase64: string; prompt: string }>('/api/motivation', {
+  return request<{ success: boolean; imageBase64?: string; prompt?: string; disabled?: boolean; message?: string }>('/api/motivation', {
     method: 'POST',
     body: JSON.stringify({ prompt }),
   });
