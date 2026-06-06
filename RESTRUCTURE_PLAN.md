@@ -76,7 +76,13 @@
   - `src/lib/notion.ts`: أنواع PropertyDef/ViewDef + serializers + buildTree + defaults.
   - API: `pages` (GET tree/flat/trash, POST) · `pages/[id]` (GET/PATCH/DELETE=archive recursive، ?hard=1) · `pages/[id]/move` (reparent+reorder + حماية دوائر) · `pages/[id]/restore` · `databases/[id]` (GET+rows, PATCH) · `databases/[id]/rows` (GET/POST) · `rows/[id]` (PATCH merge, DELETE).
   - **تحقّق curl 10/10** (صفحة/فرعية/database، row create+merge، tree، move، دائرة 400، archive+trash+restore، cleanup).
-- [ ] 3 — Layout + Sidebar (شجرة صفحات)
+- [x] 3 — Layout + Sidebar (شجرة صفحات) ✓:
+  - shell جديد (`WorkspaceShell`) — sidebar يمين (RTL) قابل للإخفاء، اختصارات Ctrl+K/Ctrl+N/Ctrl+\.
+  - `SidebarTree` — شجرة لا نهائية العمق، طي/توسيع، زر + لكل عقدة، **DnD نقل+تداخل** (projection نمط dnd-kit عبر `src/lib/tree.ts`).
+  - أقسام: بحث (`WorkspaceCommand` palette)، المفضلة، الصفحات، سلة المهملات، رابط الأدوات القديمة.
+  - Routing: `/` (home: آخر الصفحات + ملخص اليوم بزكي عند الطلب)، `/p/[pageId]` (`PageView`: عنوان+أيقونة)، `/trash` (استعادة/حذف نهائي). الأدوات القديمة منقولة لـ `/legacy`.
+  - hooks: `usePages` (tree/trash/page + mutations) · api client + types موسّعة.
+  - **تحقّق**: build ✓، كل المسارات 200، SSR يعرض المحتوى العربي. (المحرر/قاعدة البيانات placeholders حتى 4/5.)
 - [ ] 4 — Block editor (BlockNote) + أوامر /زكي
 - [ ] 5 — Databases بعروض متعددة
 - [ ] 6 — Migration للبيانات القديمة

@@ -173,3 +173,74 @@ export interface CreateTaskInput {
   boardColumn?: BoardColumn;
   projectId?: string;
 }
+
+/* ─── Notion-like Workspace (Page / Database / Row) ─────────── */
+export type PropertyType =
+  | 'text' | 'number' | 'select' | 'multiSelect'
+  | 'date' | 'checkbox' | 'url' | 'relation';
+
+export interface SelectOption { id: string; name: string; color?: string }
+
+export interface PropertyDef {
+  id: string;
+  name: string;
+  type: PropertyType;
+  options?: SelectOption[];
+}
+
+export type ViewType = 'table' | 'kanban' | 'calendar' | 'list';
+
+export interface ViewDef {
+  id: string;
+  name: string;
+  type: ViewType;
+  filters?: unknown[];
+  sorts?: unknown[];
+  groupBy?: string | null;
+}
+
+export interface WorkspacePage {
+  id: string;
+  title: string;
+  icon: string | null;
+  coverUrl: string | null;
+  parentId: string | null;
+  type: string; // 'page' | 'database'
+  content: string | null; // BlockNote JSON string
+  position: number;
+  isFavorite: boolean;
+  archivedAt: string | null;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  hasDatabase?: boolean;
+}
+
+export interface WorkspacePageNode extends WorkspacePage {
+  children: WorkspacePageNode[];
+}
+
+export interface WorkspaceDatabase {
+  id: string;
+  pageId: string;
+  properties: PropertyDef[];
+  views: ViewDef[];
+}
+
+export interface WorkspaceRow {
+  id: string;
+  databaseId: string;
+  properties: Record<string, unknown>;
+  pageId: string | null;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PageWithDatabase extends WorkspacePage {
+  database: WorkspaceDatabase | null;
+}
+
+export interface DatabaseWithRows extends WorkspaceDatabase {
+  rows: WorkspaceRow[];
+}
