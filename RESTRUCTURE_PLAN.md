@@ -94,7 +94,10 @@
   - `KanbanView` (dnd عبر @dnd-kit، groupBy على select) · `CalendarView` (حسب خاصية date) · `RowPeek` (side panel بكل الخصائص + حذف).
   - **املأ بزكي**: زر ✨ على رأس العمود → `/api/ai/fill` (structured JSON) يملأ الصفوف الفاضية.
   - **تحقّق**: build ✓، صفحة database 200، AI fill صنّف نص عربي → `done` (id الخيار الصحيح).
-- [ ] 6 — Migration للبيانات القديمة
+- [x] 6 — Migration للبيانات القديمة ✓:
+  - `scripts/migrate-to-pages.ts` (idempotent عبر markers `_taskId`/`_projectId`/`_habitId`) + `npm run migrate:pages`.
+  - أنشأ صفحات جذرية: 📋 المهام (database: الحالة/الأولوية select، التاريخ date، المشروع select، الوسوم multiSelect، + views جدول/كانبان/تقويم) · 📁 المشاريع · 🔁 العادات · وصفحات أدوات 🎯/📊/💬 (روابط مؤقتة لـ /legacy).
+  - **تحقّق**: 17 مهمة اتنقلت، run تاني = 0 جديد (idempotent)، الصفوف متطابقة. الجداول القديمة `// @deprecated` (مش متمسوحة). الأدوات في /legacy لسه شغّالة (مفيش routes قديمة تتحوّل redirect).
 - [ ] 7 — بحث + اختصارات + سياق الصفحة
 - [ ] 8 — Polish
 - [ ] 9 — Deployment

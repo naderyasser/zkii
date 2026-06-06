@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "migrate:pages": "bun scripts/migrate-to-pages.ts"
   },
   "dependencies": {
     "@blocknote/core": "^0.51.4",
