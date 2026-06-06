@@ -122,6 +122,15 @@
 - [x] سلة المهملات: أرشفة + استعادة ✓
 - [x] الموقع HTTPS على الدومين + الموديل يرد بدون أي مفتاح خارجي — https 200 + chat محلي 3s ✓
 
+## ثيم «المتحف الكلاسيكي» (ملحق — مدموج في 3+4) ✓
+- **A تأسيس**: توكنز المتحف (نهار/ليل) معاد تعيينها على أسماء Koala؛ خطوط Amiri (عناوين) + IBM Plex Sans Arabic (نص) + IBM Plex Mono؛ next-themes (الافتراضي نهار) + toggle؛ gold focus ring؛ lucide stroke 1.5؛ reduced-motion؛ BlockNote على التوكنز؛ Skeleton flat.
+- **B انضباط**: `PageIcon` (lucide:Name / emoji-مستخدم / معيّن ذهبي افتراضي)؛ صفر emoji في UI chrome؛ صفر ظلال درامية (شادو واحد)؛ rounded-full للنقط فقط؛ صفحات الأقسام بأيقونات lucide.
+- **C مكوّنات**: برواز غلاف دبل + سطر نسبة؛ شرطة جانبية ذهبية للعنصر النشط + نقطة باليتة؛ أعمدة كانبان «قاعات» Amiri؛ command/peek/chat كروت متحف.
+- **D أغلفة Met**: `art-collection` (CC0 متحقَّق) + `/api/art/{random,[id]}` كاش 24h + زر «لوحة جديدة» (RefreshCw).
+- **E باليتة**: node-vibrant + ترويض HSL/تباين (accentLight≥4.5 على الورق، accentDark≥4.5 على الفحمي، sat≤60%، tint 92/8)؛ `Page.palette`+`coverMeta`؛ accent على روابط/checkbox/اقتباس/حالة/selection فقط.
+- **قبول**: grep نظيف (صفر gradient/blur/shadow-lg+/rounded-2xl+؛ rounded-full = نقط فقط؛ صفر emoji عدا منتقي المستخدم)؛ نهار/ليل شغّالين؛ palette مُروَّضة متحقَّقة على الإنتاج (accentLight #7d6527).
+- **انحراف موثّق**: قائمة اللوحات 24 عمل (مش 40-60) بسبب rate-limit الـ Met أثناء التوليد — `scripts/validate-art.ts` يقدر يوسّعها لاحقاً.
+
 ## ملاحظات للمتابعة
 - DnD للشجرة والـ Kanban وأوامر المحرر التفاعلية تحتاج اختبار يدوي في المتصفح (build + المنطق متحقَّقين، لكن مفيش اختبار headless للتفاعل).
 - صفحات الأدوات (🎯/📊/💬) بتلينك لـ /legacy مؤقتاً — دمجها الكامل كـ blocks/widgets شغل مستقبلي.
