@@ -83,7 +83,11 @@
   - Routing: `/` (home: آخر الصفحات + ملخص اليوم بزكي عند الطلب)، `/p/[pageId]` (`PageView`: عنوان+أيقونة)، `/trash` (استعادة/حذف نهائي). الأدوات القديمة منقولة لـ `/legacy`.
   - hooks: `usePages` (tree/trash/page + mutations) · api client + types موسّعة.
   - **تحقّق**: build ✓، كل المسارات 200، SSR يعرض المحتوى العربي. (المحرر/قاعدة البيانات placeholders حتى 4/5.)
-- [ ] 4 — Block editor (BlockNote) + أوامر /زكي
+- [x] 4 — Block editor (BlockNote) + أوامر /زكي ✓:
+  - `@blocknote/{core,react,shadcn}` 0.51.4 (React 19 ✓). `PageEditor` (dynamic، بدون SSR) داخل `PageView`.
+  - حفظ تلقائي debounced 700ms لـ `Page.content` (JSON) · RTL + خط Cairo (globals.css) · slash menu افتراضية.
+  - مجموعة slash «زكي ✨»: كمّل/لخّص/حسّن/ترجم/استخرج مهام/اشرح — عبر streaming (`/api/ai/stream` + `lib/ai-client.ts`) مع إدراج حيّ + شريط «قبول/تراجع». «استخرج مهام» بتعمل checklist + تنشئ مهام فعلية.
+  - **تحقّق**: build ✓، `/api/ai/stream` بيرجّع عربي متدفّق 5s بدون `<think>`، `/p/[id]` 200.
 - [ ] 5 — Databases بعروض متعددة
 - [ ] 6 — Migration للبيانات القديمة
 - [ ] 7 — بحث + اختصارات + سياق الصفحة
