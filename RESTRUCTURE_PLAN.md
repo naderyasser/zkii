@@ -71,7 +71,11 @@
   - `ai.ts`: timeout 180s · `chatCompletionStream()` (SSE) · `stripThink()` · fallback تلقائي لـ `AI_FALLBACK_*`.
   - الـ system prompt + context في `chat/route.ts` اتقلّلوا من ~4800 → ~400 توكن (CPU prefill كان ~178s).
   - **تحقّق E2E**: شات بسيط 42s · tool-calling بينشئ مهمة فعلياً في DB 39s · عربي سليم · بدون أي API خارجي.
-- [ ] 2 — Data model (Page/Database/Row) + API
+- [x] 2 — Data model (Page/Database/Row) + API ✓:
+  - Prisma: Page/Database/Row مضافة، الجداول القديمة سليمة. `db push` نجح (additive).
+  - `src/lib/notion.ts`: أنواع PropertyDef/ViewDef + serializers + buildTree + defaults.
+  - API: `pages` (GET tree/flat/trash, POST) · `pages/[id]` (GET/PATCH/DELETE=archive recursive، ?hard=1) · `pages/[id]/move` (reparent+reorder + حماية دوائر) · `pages/[id]/restore` · `databases/[id]` (GET+rows, PATCH) · `databases/[id]/rows` (GET/POST) · `rows/[id]` (PATCH merge, DELETE).
+  - **تحقّق curl 10/10** (صفحة/فرعية/database، row create+merge، tree، move، دائرة 400، archive+trash+restore، cleanup).
 - [ ] 3 — Layout + Sidebar (شجرة صفحات)
 - [ ] 4 — Block editor (BlockNote) + أوامر /زكي
 - [ ] 5 — Databases بعروض متعددة
