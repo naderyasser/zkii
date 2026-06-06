@@ -88,7 +88,12 @@
   - حفظ تلقائي debounced 700ms لـ `Page.content` (JSON) · RTL + خط Cairo (globals.css) · slash menu افتراضية.
   - مجموعة slash «زكي ✨»: كمّل/لخّص/حسّن/ترجم/استخرج مهام/اشرح — عبر streaming (`/api/ai/stream` + `lib/ai-client.ts`) مع إدراج حيّ + شريط «قبول/تراجع». «استخرج مهام» بتعمل checklist + تنشئ مهام فعلية.
   - **تحقّق**: build ✓، `/api/ai/stream` بيرجّع عربي متدفّق 5s بدون `<think>`، `/p/[id]` 200.
-- [ ] 5 — Databases بعروض متعددة
+- [x] 5 — Databases بعروض متعددة ✓:
+  - `DatabaseView` — تبديل عروض (جدول/كانبان/تقويم/قائمة) + إضافة عرض/عمود/صف + بحث + sort.
+  - `PropertyCell` — تحرير inline حسب النوع (text/number/select/multiSelect/date/checkbox/url).
+  - `KanbanView` (dnd عبر @dnd-kit، groupBy على select) · `CalendarView` (حسب خاصية date) · `RowPeek` (side panel بكل الخصائص + حذف).
+  - **املأ بزكي**: زر ✨ على رأس العمود → `/api/ai/fill` (structured JSON) يملأ الصفوف الفاضية.
+  - **تحقّق**: build ✓، صفحة database 200، AI fill صنّف نص عربي → `done` (id الخيار الصحيح).
 - [ ] 6 — Migration للبيانات القديمة
 - [ ] 7 — بحث + اختصارات + سياق الصفحة
 - [ ] 8 — Polish

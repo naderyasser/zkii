@@ -284,6 +284,17 @@ export async function deleteRow(id: string) {
   return request<{ deleted: boolean }>(`/api/rows/${id}`, { method: 'DELETE' });
 }
 
+export async function aiFillProperty(data: {
+  property: { name: string; type: string; options?: { id: string; name: string }[] };
+  context: Record<string, unknown>;
+  instruction?: string;
+}) {
+  return request<{ value: unknown }>('/api/ai/fill', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 /* ─── Type imports for return types ────────────────────── */
 import type {
   Task,
