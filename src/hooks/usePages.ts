@@ -2,6 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '@/lib/api';
 import type { WorkspacePageNode, WorkspacePage, PageWithDatabase } from '@/types';
 
+// تحديث عقدة داخل شجرة (للـ optimistic updates)
+function patchTree(
+  nodes: WorkspacePageNode[],
+  id: string,
+  patch: Partial<WorkspacePage>
+): WorkspacePageNode[] {
+  return nodes.map((n) =>
+    n.id === id
+      ? { ...n, ...patch }
+      : n.children.length
+        ? { ...n, children: patchTree(n.children, id, patch) }
+        : n
+  );
+}
+
 /* ─── Pages tree ───────────────────────────────────────────── */
 export function usePagesTree() {
   return useQuery<WorkspacePageNode[]>({
@@ -59,7 +74,22 @@ export function useUpdatePage() {
       id: string;
       data: Partial<{ title: string; icon: string | null; coverUrl: string | null; content: string; isFavorite: boolean }>;
     }) => api.updatePage(id, data),
-    onSuccess: (_res, vars) => {
+    // optimistic: حدّث الشجرة فوراً للحقول الظاهرة في الـ sidebar (عنوان/أيقونة/مفضلة)
+    onMutate: async ({ id, data }) => {
+      const visible: Partial<WorkspacePage> = {};
+      if (data.title !== undefined) visible.title = data.title;
+      if (data.icon !== undefined) visible.icon = data.icon;
+      if (data.isFavorite !== undefined) visible.isFavorite = data.isFavorite;
+      if (Object.keys(visible).length === 0) return { prevTree: undefined };
+      await qc.cancelQueries({ queryKey: ['pages', 'tree'] });
+      const prevTree = qc.getQueryData<WorkspacePageNode[]>(['pages', 'tree']);
+      if (prevTree) qc.setQueryData(['pages', 'tree'], patchTree(prevTree, id, visible));
+      return { prevTree };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prevTree) qc.setQueryData(['pages', 'tree'], ctx.prevTree);
+    },
+    onSettled: (_res, _e, vars) => {
       qc.invalidateQueries({ queryKey: ['pages'] });
       qc.invalidateQueries({ queryKey: ['page', vars.id] });
     },
