@@ -186,3 +186,52 @@ model HabitLog {
 
   @@unique([habitId, date])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NOTION-LIKE WORKSPACE — Page / Database / Row  (المرحلة 2)
+// الجداول القديمة (Task/Project/Habit...) بتفضل موجودة؛ النقل بيحصل في المرحلة 6.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Page {
+  id         String    @id @default(cuid())
+  title      String    @default("بدون عنوان")
+  icon       String? // emoji
+  coverUrl   String?
+  parentId   String?
+  parent     Page?     @relation("PageTree", fields: [parentId], references: [id])
+  children   Page[]    @relation("PageTree")
+  type       String    @default("page") // page | database
+  content    String? // BlockNote JSON (string في SQLite)
+  position   Float     @default(0)
+  isFavorite Boolean   @default(false)
+  archivedAt DateTime? // soft delete = سلة المهملات
+  userId     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  database   Database?
+
+  @@index([parentId])
+  @@index([userId])
+}
+
+model Database {
+  id         String @id @default(cuid())
+  pageId     String @unique
+  page       Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  properties String // JSON: [{id,name,type,options}] — types: text,number,select,multiSelect,date,checkbox,url,relation
+  views      String // JSON: [{id,name,type:'table'|'kanban'|'calendar'|'list',filters,sorts,groupBy}]
+  rows       Row[]
+}
+
+model Row {
+  id         String   @id @default(cuid())
+  databaseId String
+  database   Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  properties String // JSON: {propId: value}
+  pageId     String? // كل row ممكن يفتح كصفحة كاملة
+  position   Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([databaseId])
+}
