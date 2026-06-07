@@ -211,6 +211,7 @@ model Page {
   parent     Page?     @relation("PageTree", fields: [parentId], references: [id])
   children   Page[]    @relation("PageTree")
   type       String    @default("page") // page | database
+  system     Boolean   @default(false) // صفحة نظام ثابتة (المهام/المشاريع/العادات/التركيز/التحليلات/شات) — مش في شجرة «صفحاتي»
   content    String? // BlockNote JSON (string في SQLite)
   position   Float     @default(0)
   isFavorite Boolean   @default(false)

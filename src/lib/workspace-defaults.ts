@@ -66,8 +66,23 @@ async function createDbPage(
   if (existing) return;
   await db.page.create({
     data: {
-      title, icon, type: 'database', userId, position,
+      title, icon, type: 'database', userId, position, system: true,
       database: { create: { userId, properties: JSON.stringify(properties), views: JSON.stringify(views) } },
+    },
+  });
+}
+
+// صفحة أداة نظام (التركيز/التحليلات/شات) — لينك مؤقت للأدوات القديمة
+async function createToolPage(db: PrismaClient, userId: string, title: string, icon: string, label: string, position: number) {
+  const existing = await db.page.findFirst({ where: { userId, title, type: 'page', archivedAt: null } });
+  if (existing) return;
+  await db.page.create({
+    data: {
+      title, icon, type: 'page', userId, position, system: true,
+      content: JSON.stringify([
+        { type: 'paragraph', content: `${label} متاحة حالياً في الأدوات القديمة.` },
+        { type: 'paragraph', content: [{ type: 'link', href: '/legacy', content: 'افتح الأداة ↗' }] },
+      ]),
     },
   });
 }
@@ -90,4 +105,7 @@ export async function bootstrapNewUser(db: PrismaClient, userId: string) {
   await createDbPage(db, userId, 'المهام', 'lucide:ListTodo', TASKS_PROPS, TASKS_VIEWS, 1);
   await createDbPage(db, userId, 'المشاريع', 'lucide:Folder', PROJECTS_PROPS, TABLE_VIEW, 2);
   await createDbPage(db, userId, 'العادات', 'lucide:Repeat', HABITS_PROPS, TABLE_VIEW, 3);
+  await createToolPage(db, userId, 'التركيز', 'lucide:Target', 'أداة التركيز (Pomodoro)', 4);
+  await createToolPage(db, userId, 'التحليلات', 'lucide:BarChart3', 'لوحة التحليلات والـ heatmap', 5);
+  await createToolPage(db, userId, 'شات زكي', 'lucide:MessageSquare', 'محادثة زكي', 6);
 }

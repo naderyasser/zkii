@@ -34,6 +34,7 @@ async function findOrCreateDatabasePage(opts: {
         title: opts.title,
         icon: opts.icon,
         type: 'database',
+        system: true,
         userId: USER_ID,
         position: (last?.position ?? 0) + 1,
         database: { create: { properties: JSON.stringify(opts.properties), views: JSON.stringify(opts.views) } },
@@ -59,7 +60,7 @@ async function findOrCreatePage(title: string, icon: string, content?: string) {
   if (existing) return existing;
   const last = await db.page.findFirst({ where: { userId: USER_ID, parentId: null }, orderBy: { position: 'desc' } });
   const page = await db.page.create({
-    data: { title, icon, type: 'page', userId: USER_ID, position: (last?.position ?? 0) + 1, content: content ?? null },
+    data: { title, icon, type: 'page', system: true, userId: USER_ID, position: (last?.position ?? 0) + 1, content: content ?? null },
   });
   log(`created tool page «${title}»`);
   return page;

@@ -224,6 +224,7 @@ export interface WorkspacePage {
   palette: string | null; // JSON PagePalette
   parentId: string | null;
   type: string; // 'page' | 'database'
+  system: boolean; // صفحة نظام ثابتة (مش في «صفحاتي»)
   content: string | null; // BlockNote JSON string
   position: number;
   isFavorite: boolean;
