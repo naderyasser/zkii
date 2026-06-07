@@ -15,6 +15,8 @@
 // المبدأ: الاستدعاء مبيرميش استثناء أبداً — بيرجّع رسالة fallback عربية عند أي خطأ.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { enqueue, acquireSlot, pendingCount } from './ai-queue';
+
 // ─── أنواع متوافقة مع شكل OpenAI ──────────────────────────────────────────────
 export interface ToolCall {
   id: string;
@@ -189,28 +191,26 @@ export async function chatCompletion(
     );
   }
 
-  // جرّب المزوّد الأساسي
-  if (primary) {
-    try {
-      return await callProvider(primary, params);
-    } catch (err) {
-      const aborted = err instanceof Error && err.name === 'AbortError';
-      console.error(`[AI] primary failed${aborted ? ' (timeout)' : ''}:`, err);
-      // هنكمّل للـ fallback تحت
+  // كل النداء (أساسي + fallback) عبر الطابور التسلسلي — نداء واحد في كل لحظة
+  return enqueue(async () => {
+    if (primary) {
+      try {
+        return await callProvider(primary, params);
+      } catch (err) {
+        const aborted = err instanceof Error && err.name === 'AbortError';
+        console.error(`[AI] primary failed${aborted ? ' (timeout)' : ''}:`, err);
+      }
     }
-  }
-
-  // جرّب المزوّد الاحتياطي
-  if (fb) {
-    try {
-      console.warn('[AI] falling back to external provider');
-      return await callProvider(fb, params);
-    } catch (err) {
-      console.error('[AI] fallback failed:', err);
+    if (fb) {
+      try {
+        console.warn('[AI] falling back to external provider');
+        return await callProvider(fb, params);
+      } catch (err) {
+        console.error('[AI] fallback failed:', err);
+      }
     }
-  }
-
-  return fallbackMessage('[ERR] تعذّر الاتصال بالموديل المحلي والاحتياطي — حاول تاني بعد شوية.');
+    return fallbackMessage('[ERR] تعذّر الاتصال بالموديل المحلي والاحتياطي — حاول تاني بعد شوية.');
+  });
 }
 
 // ─── Streaming ────────────────────────────────────────────────────────────────
@@ -296,32 +296,41 @@ export async function* chatCompletionStream(
     return;
   }
 
-  if (primary) {
-    try {
-      let started = false;
-      for await (const chunk of streamProvider(primary, params, signal)) {
-        started = true;
-        yield chunk;
-      }
-      if (started) return; // اكتمل التدفّق الأساسي بنجاح
-      // لو خلص بدون أي محتوى، جرّب الاحتياطي تحت
-    } catch (err) {
-      console.error('[AI] primary stream failed:', err);
-      // هنجرّب الاحتياطي تحت
-    }
+  // لو في نداء قبلنا، طمّن المستخدم إنه في الطابور
+  if (pendingCount() > 0) {
+    yield 'زكي بيخلّص رد تاني، ثواني…\n';
   }
 
-  if (fb) {
-    try {
-      console.warn('[AI] streaming fallback to external provider');
-      for await (const chunk of streamProvider(fb, params, signal)) {
-        yield chunk;
+  // احجز slot الطابور للستريم كله (نداء واحد للموديل في كل لحظة)
+  const release = await acquireSlot();
+  try {
+    if (primary) {
+      try {
+        let started = false;
+        for await (const chunk of streamProvider(primary, params, signal)) {
+          started = true;
+          yield chunk;
+        }
+        if (started) return;
+      } catch (err) {
+        console.error('[AI] primary stream failed:', err);
       }
-      return;
-    } catch (err) {
-      console.error('[AI] fallback stream failed:', err);
     }
-  }
 
-  yield '[ERR] تعذّر الاتصال بالموديل — حاول تاني.';
+    if (fb) {
+      try {
+        console.warn('[AI] streaming fallback to external provider');
+        for await (const chunk of streamProvider(fb, params, signal)) {
+          yield chunk;
+        }
+        return;
+      } catch (err) {
+        console.error('[AI] fallback stream failed:', err);
+      }
+    }
+
+    yield '[ERR] تعذّر الاتصال بالموديل — حاول تاني.';
+  } finally {
+    release();
+  }
 }

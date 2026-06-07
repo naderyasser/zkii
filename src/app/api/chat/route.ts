@@ -9,6 +9,7 @@ import {
   enrichTask,
 } from '@/lib/task-utils';
 import { getUserId, unauthorized } from '@/lib/session';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // تكامل Gmail/Calendar حالياً مربوط بحساب واحد (الأدمن = DEFAULT_USER_ID).
 // لأي مستخدم تاني نرجّع «غير متصل» عشان نمنع تسريب بيانات الأدمن.
@@ -726,6 +727,15 @@ export async function POST(request: NextRequest) {
   try {
     const sessionUserId = await getUserId();
     if (!sessionUserId) return unauthorized();
+
+    // rate limit لكل مستخدم
+    const rl = checkRateLimit(sessionUserId);
+    if (!rl.ok) {
+      return NextResponse.json(
+        { reply: `وصلت الحد الأقصى للرسائل (${rl.limit}/ساعة). جرّب تاني بعد ${Math.ceil((rl.retryAfterSec || 0) / 60)} دقيقة.` },
+        { status: 429 }
+      );
+    }
 
     const body = await request.json();
     const { messages } = body as {
