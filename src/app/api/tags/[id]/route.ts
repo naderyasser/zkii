@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedTag } from '@/lib/session';
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const existing = await db.tag.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Tag not found' }, { status: 404 });
-    }
+    const existing = await ownedTag(id, userId);
+    if (!existing) return notFound('Tag');
 
     await db.tag.delete({ where: { id } });
 

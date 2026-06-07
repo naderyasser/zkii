@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedHabit } from '@/lib/session';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
+
+    const habit = await ownedHabit(id, userId);
+    if (!habit) return notFound('Habit');
+
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '7', 10);
 

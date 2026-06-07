@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
+    const taskUserId = await getUserId();
+    if (!taskUserId) return unauthorized();
     const body = await request.json();
-    const { date, userId } = body as { date: string; userId?: string };
+    const { date } = body as { date: string };
 
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return NextResponse.json(
@@ -14,8 +16,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const taskUserId = userId || DEFAULT_USER_ID;
 
     // Get tasks for the day
     const dayStart = new Date(`${date}T00:00:00.000Z`);

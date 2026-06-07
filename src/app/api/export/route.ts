@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 function escapeCsvField(value: string | null | undefined): string {
   if (value === null || value === undefined) return '';
@@ -13,9 +13,11 @@ function escapeCsvField(value: string | null | undefined): string {
 
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const format = searchParams.get('format') || 'csv';
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
 
     if (format !== 'csv') {
       return NextResponse.json(

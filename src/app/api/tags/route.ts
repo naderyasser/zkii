@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET() {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const tags = await db.tag.findMany({
-      where: { userId: DEFAULT_USER_ID },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -21,6 +24,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const body = await request.json();
     const { name, color } = body;
 
@@ -33,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const tag = await db.tag.create({
       data: {
-        userId: DEFAULT_USER_ID,
+        userId,
         name: name.trim(),
         color: color || '#7aa2f7',
       },

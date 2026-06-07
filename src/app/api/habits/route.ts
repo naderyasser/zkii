@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 function formatHabitDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -86,8 +86,11 @@ async function enrichHabit(habit: {
 
 export async function GET() {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const habits = await db.habit.findMany({
-      where: { userId: DEFAULT_USER_ID },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -104,6 +107,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const body = await request.json();
     const { name, description, icon, color, frequency, targetCount } = body;
 
@@ -116,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     const habit = await db.habit.create({
       data: {
-        userId: DEFAULT_USER_ID,
+        userId,
         name: name.trim(),
         description: description || '',
         icon: icon || '✅',

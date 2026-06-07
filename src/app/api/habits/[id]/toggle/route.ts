@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedHabit } from '@/lib/session';
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -10,12 +11,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const existing = await db.habit.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Habit not found' }, { status: 404 });
-    }
+    const existing = await ownedHabit(id, userId);
+    if (!existing) return notFound('Habit');
 
     const today = todayStr();
     const existingLog = await db.habitLog.findUnique({

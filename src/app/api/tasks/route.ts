@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {
-  DEFAULT_USER_ID,
   computeDaysUntilDue,
   computePressureLevel,
   computeAiScore,
   enrichTask,
 } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get('filter') || 'all';
     const sortBy = searchParams.get('sort_by') || 'priority';
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
 
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -105,8 +106,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionUserId = await getUserId();
+    if (!sessionUserId) return unauthorized();
     const body = await request.json();
-    const { title, notes, category, priority, dueDatetime, userId, isRecurring, recurrenceRule, boardColumn, projectId } = body;
+    const { title, notes, category, priority, dueDatetime, isRecurring, recurrenceRule, boardColumn, projectId } = body;
 
     if (!title || typeof title !== 'string' || title.trim() === '') {
       return NextResponse.json(
@@ -117,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     const taskPriority = priority || 'medium';
     const taskCategory = category || 'work';
-    const taskUserId = userId || DEFAULT_USER_ID;
+    const taskUserId = sessionUserId;
 
     const daysUntilDue = computeDaysUntilDue(dueDatetime || null);
     const aiScore = computeAiScore(daysUntilDue, taskPriority);

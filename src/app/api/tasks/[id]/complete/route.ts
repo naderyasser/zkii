@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { enrichTask } from '@/lib/task-utils';
+import { getUserId, unauthorized, notFound, ownedTask } from '@/lib/session';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const existing = await db.task.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
+    const existing = await ownedTask(id, userId);
+    if (!existing) return notFound('Task');
 
     if (existing.status === 'done') {
       return NextResponse.json(

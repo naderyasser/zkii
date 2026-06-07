@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getOAuthStatus } from '@/lib/googleApi';
+import { getUserId, unauthorized } from '@/lib/session';
+import { DEFAULT_USER_ID } from '@/lib/task-utils';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Integration Status — Check if Google OAuth is connected
+// Integration Status — حالة ربط Google (تكامل Gmail/Calendar مربوط بالأدمن حالياً)
 // ═══════════════════════════════════════════════════════════════════════════════
-
 export async function GET() {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+    // التكامل متاح للأدمن فقط — غيره يشوف «غير متصل»
+    if (userId !== DEFAULT_USER_ID) {
+      return NextResponse.json({ connected: false, provider: 'google', scopes: [] });
+    }
     const status = await getOAuthStatus();
     return NextResponse.json(status);
   } catch (error) {

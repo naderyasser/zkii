@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedPage } from '@/lib/session';
 import { serializePage } from '@/lib/notion';
 import { extractPalette } from '@/lib/palette';
 
@@ -10,12 +11,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
+    if (!(await ownedPage(id, userId))) return notFound('Page');
     const body = await request.json().catch(() => ({}));
     const { coverUrl, coverMeta } = body as { coverUrl: string | null; coverMeta?: unknown };
-
-    const existing = await db.page.findUnique({ where: { id } });
-    if (!existing) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
     if (!coverUrl) {
       const cleared = await db.page.update({

@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedTask, ownedTag } from '@/lib/session';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
+
+    const task = await ownedTask(id, userId);
+    if (!task) return notFound('Task');
 
     const taskTags = await db.tagTask.findMany({
       where: { taskId: id },
@@ -30,6 +37,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
     const body = await request.json();
     const { tagId } = body;
@@ -41,17 +51,13 @@ export async function POST(
       );
     }
 
-    // Verify task exists
-    const task = await db.task.findUnique({ where: { id } });
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
+    // Verify task ownership
+    const task = await ownedTask(id, userId);
+    if (!task) return notFound('Task');
 
-    // Verify tag exists
-    const tag = await db.tag.findUnique({ where: { id: tagId } });
-    if (!tag) {
-      return NextResponse.json({ error: 'Tag not found' }, { status: 404 });
-    }
+    // Verify tag ownership
+    const tag = await ownedTag(tagId, userId);
+    if (!tag) return notFound('Tag');
 
     // Create the association (ignore if already exists)
     const tagTask = await db.tagTask.upsert({
@@ -89,6 +95,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
     const body = await request.json();
     const { tagId } = body;
@@ -99,6 +108,9 @@ export async function DELETE(
         { status: 400 }
       );
     }
+
+    const task = await ownedTask(id, userId);
+    if (!task) return notFound('Task');
 
     const tagTask = await db.tagTask.findUnique({
       where: {

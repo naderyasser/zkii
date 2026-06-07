@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized, ownedPage } from '@/lib/session';
 import {
   serializePage,
   buildTree,
@@ -8,20 +8,17 @@ import {
   defaultViews,
 } from '@/lib/notion';
 
-// GET /api/pages?view=tree|flat&archived=0|1
-// بترجّع الصفحات (شجرة افتراضياً). archived=1 لعرض سلة المهملات.
+// GET /api/pages?view=tree|flat&archived=0|1 — صفحات المستخدم الحالي فقط
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
     const view = searchParams.get('view') || 'tree';
     const archived = searchParams.get('archived') === '1';
 
     const pages = await db.page.findMany({
-      where: {
-        userId,
-        archivedAt: archived ? { not: null } : null,
-      },
+      where: { userId, archivedAt: archived ? { not: null } : null },
       orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
       include: { database: true },
     });
@@ -37,27 +34,29 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/pages
-// body: { title?, icon?, parentId?, type?: 'page'|'database', userId? }
-// لو type='database' بننشئ Database مرتبط بالصفحة بخصائص/عروض افتراضية.
+// POST /api/pages — body: { title?, icon?, parentId?, type?: 'page'|'database', coverUrl? }
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const body = await request.json().catch(() => ({}));
-    const { title, icon, parentId, type, userId, coverUrl } = body as {
+    const { title, icon, parentId, type, coverUrl } = body as {
       title?: string;
       icon?: string;
       parentId?: string | null;
       type?: string;
-      userId?: string;
       coverUrl?: string;
     };
 
-    const resolvedUser = userId || DEFAULT_USER_ID;
-    const pageType = type === 'database' ? 'database' : 'page';
+    // لو فيه أب، لازم يكون ملك نفس المستخدم
+    if (parentId) {
+      const parent = await ownedPage(parentId, userId);
+      if (!parent) return NextResponse.json({ error: 'Parent not found' }, { status: 404 });
+    }
 
-    // ترتيب: في آخر القائمة على نفس المستوى
+    const pageType = type === 'database' ? 'database' : 'page';
     const last = await db.page.findFirst({
-      where: { userId: resolvedUser, parentId: parentId ?? null },
+      where: { userId, parentId: parentId ?? null },
       orderBy: { position: 'desc' },
       select: { position: true },
     });
@@ -71,11 +70,12 @@ export async function POST(request: NextRequest) {
         parentId: parentId ?? null,
         type: pageType,
         position,
-        userId: resolvedUser,
+        userId,
         ...(pageType === 'database'
           ? {
               database: {
                 create: {
+                  userId,
                   properties: JSON.stringify(defaultProperties()),
                   views: JSON.stringify(defaultViews()),
                 },
