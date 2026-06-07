@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID, enrichTask } from '@/lib/task-utils';
+import { enrichTask } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
 
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return NextResponse.json(

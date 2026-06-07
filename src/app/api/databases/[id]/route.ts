@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedDatabase } from '@/lib/session';
 import { serializeDatabase, serializeRow } from '@/lib/notion';
 
-// GET /api/databases/[id] — تعريف القاعدة + صفوفها
+// GET /api/databases/[id] — تعريف القاعدة + صفوفها. ملك المستخدم فقط.
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
+    if (!(await ownedDatabase(id, userId))) return notFound('Database');
     const database = await db.database.findUnique({
       where: { id },
       include: { rows: { orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] } },
     });
-    if (!database) {
-      return NextResponse.json({ error: 'Database not found' }, { status: 404 });
-    }
+    if (!database) return notFound('Database');
     return NextResponse.json({
       ...serializeDatabase(database),
       rows: database.rows.map(serializeRow),
@@ -32,13 +34,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
+    if (!(await ownedDatabase(id, userId))) return notFound('Database');
     const body = await request.json().catch(() => ({}));
-
-    const existing = await db.database.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Database not found' }, { status: 404 });
-    }
 
     const data: Record<string, unknown> = {};
     if (body.properties !== undefined) {

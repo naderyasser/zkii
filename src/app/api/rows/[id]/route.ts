@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedRow } from '@/lib/session';
 import { serializeRow, safeParse } from '@/lib/notion';
 
-// PATCH /api/rows/[id] — تحديث قيم الخصائص (merge) و/أو position/pageId
-// body: { properties?: {propId: value}, position?, pageId?, replaceProperties?: bool }
+// PATCH /api/rows/[id] — تحديث قيم الخصائص (merge) و/أو position/pageId. ملك المستخدم.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
+    const existing = await ownedRow(id, userId);
+    if (!existing) return notFound('Row');
     const body = await request.json().catch(() => ({}));
-
-    const existing = await db.row.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Row not found' }, { status: 404 });
-    }
 
     const data: Record<string, unknown> = {};
 
@@ -45,11 +44,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
-    const existing = await db.row.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Row not found' }, { status: 404 });
-    }
+    if (!(await ownedRow(id, userId))) return notFound('Row');
     await db.row.delete({ where: { id } });
     return NextResponse.json({ deleted: true });
   } catch (error) {

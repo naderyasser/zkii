@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID, enrichTask } from '@/lib/task-utils';
+import { enrichTask } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
 
     const now = new Date();
 

@@ -5,21 +5,20 @@ import {
   computeAiScore,
   enrichTask,
 } from '@/lib/task-utils';
+import { getUserId, unauthorized, notFound, ownedTask } from '@/lib/session';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const task = await db.task.findUnique({
-      where: { id },
-    });
-
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
+    const task = await ownedTask(id, userId);
+    if (!task) return notFound('Task');
 
     return NextResponse.json(enrichTask(task));
   } catch (error) {
@@ -36,13 +35,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
     const body = await request.json();
 
-    const existing = await db.task.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
+    const existing = await ownedTask(id, userId);
+    if (!existing) return notFound('Task');
 
     // Build update data
     const updateData: Record<string, unknown> = {};
@@ -90,12 +90,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const existing = await db.task.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
+    const existing = await ownedTask(id, userId);
+    if (!existing) return notFound('Task');
 
     await db.task.delete({ where: { id } });
 

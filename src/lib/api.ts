@@ -1,4 +1,3 @@
-import { getDefaultUserId } from './auth';
 
 const API_BASE = '';
 
@@ -25,7 +24,7 @@ export async function getTasks(filter = 'all', sortBy = 'priority') {
 export async function createTask(data: CreateTaskInput) {
   return request<Task>('/api/tasks', {
     method: 'POST',
-    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+    body: JSON.stringify(data),
   });
 }
 
@@ -125,7 +124,7 @@ export async function getHabits() {
 export async function createHabit(data: CreateHabitInput) {
   return request<HabitType>('/api/habits', {
     method: 'POST',
-    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+    body: JSON.stringify(data),
   });
 }
 
@@ -154,7 +153,7 @@ export async function createProject(data: {
 }) {
   return request<ProjectType>('/api/projects', {
     method: 'POST',
-    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+    body: JSON.stringify(data),
   });
 }
 
@@ -215,7 +214,7 @@ export async function createPage(data: {
 }) {
   return request<WorkspacePage>('/api/pages', {
     method: 'POST',
-    body: JSON.stringify({ ...data, userId: getDefaultUserId() }),
+    body: JSON.stringify(data),
   });
 }
 

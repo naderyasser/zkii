@@ -8,6 +8,13 @@ import {
   computeAiScore,
   enrichTask,
 } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
+
+// تكامل Gmail/Calendar حالياً مربوط بحساب واحد (الأدمن = DEFAULT_USER_ID).
+// لأي مستخدم تاني نرجّع «غير متصل» عشان نمنع تسريب بيانات الأدمن.
+function googleAvailableFor(userId: string): boolean {
+  return userId === DEFAULT_USER_ID;
+}
 import { GmailService, CalendarService, getOAuthStatus } from '@/lib/googleApi';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -478,6 +485,10 @@ async function executeTool(
 
       // ─── SCAN GMAIL INBOX ─────────────────────────────────────────────
       case 'scan_gmail_inbox': {
+        // عزل: تكامل Google متاح للأدمن فقط حالياً
+        if (!googleAvailableFor(userId)) {
+          return { tool: 'scan_gmail_inbox', status: 'error', message: 'GOOGLE_NOT_CONNECTED: اربط حساب Google من لوحة Integrations.' };
+        }
         // Check if Google is connected first
         const oauthStatus = await getOAuthStatus();
         if (!oauthStatus.connected) {
@@ -537,6 +548,10 @@ async function executeTool(
 
       // ─── GET CALENDAR EVENTS ──────────────────────────────────────────
       case 'get_calendar_events': {
+        // عزل: تكامل Google متاح للأدمن فقط حالياً
+        if (!googleAvailableFor(userId)) {
+          return { tool: 'get_calendar_events', status: 'error', message: 'GOOGLE_NOT_CONNECTED: اربط حساب Google من لوحة Integrations.' };
+        }
         // Check if Google is connected first
         const oauthStatus = await getOAuthStatus();
         if (!oauthStatus.connected) {
@@ -709,10 +724,12 @@ ${taskLines || '(لا توجد مهام معلّقة)'}`;
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionUserId = await getUserId();
+    if (!sessionUserId) return unauthorized();
+
     const body = await request.json();
-    const { messages, userId } = body as {
+    const { messages } = body as {
       messages: { role: 'user' | 'assistant'; content: string }[];
-      userId?: string;
     };
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -722,7 +739,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const taskUserId = userId || DEFAULT_USER_ID;
+    // userId من الجلسة فقط (العميل ممنوع يحدده)
+    const taskUserId = sessionUserId;
 
     // ─── Step 1: Build rich context ──────────────────────────────────────
     const systemContext = await buildSystemContext(taskUserId);

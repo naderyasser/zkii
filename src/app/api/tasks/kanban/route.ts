@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID, enrichTask } from '@/lib/task-utils';
+import { enrichTask } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET() {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const tasks = await db.task.findMany({
-      where: { userId: DEFAULT_USER_ID },
+      where: { userId },
       orderBy: { aiScore: 'desc' },
     });
 

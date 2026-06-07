@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
 
     const projects = await db.project.findMany({
       where: { userId },
@@ -46,8 +46,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const body = await request.json();
-    const { name, description, color, icon, userId } = body;
+    const { name, description, color, icon } = body;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
       return NextResponse.json(
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     const project = await db.project.create({
       data: {
-        userId: userId || DEFAULT_USER_ID,
+        userId,
         name: name.trim(),
         description: description || '',
         color: color || '#7aa2f7',

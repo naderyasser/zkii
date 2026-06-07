@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 interface HeatmapDay {
   date: string;
@@ -20,9 +20,11 @@ function computeLevel(total: number, done: number): number {
 
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString(), 10);
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
 
     // Get all day logs for the year
     const yearStart = `${year}-01-01`;

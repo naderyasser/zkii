@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { DEFAULT_USER_ID } from '@/lib/task-utils';
+import { getUserId, unauthorized } from '@/lib/session';
 
 // استخراج نص مقروء من محتوى BlockNote (JSON) للبحث وعمل snippet
 function extractText(contentJson: string | null): string {
@@ -37,9 +37,10 @@ function snippet(text: string, term: string): string {
 // GET /api/search?q=...  — بحث في عناوين الصفحات ومحتوى الـ blocks
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get('q') || '').trim();
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
     if (!q) return NextResponse.json([]);
 
     const pages = await db.page.findMany({

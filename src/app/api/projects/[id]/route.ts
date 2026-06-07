@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedProject } from '@/lib/session';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
     const body = await request.json();
 
-    const existing = await db.project.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
+    const existing = await ownedProject(id, userId);
+    if (!existing) return notFound('Project');
 
     const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name.trim();
@@ -40,12 +42,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
+
     const { id } = await params;
 
-    const existing = await db.project.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
+    const existing = await ownedProject(id, userId);
+    if (!existing) return notFound('Project');
 
     await db.project.delete({ where: { id } });
 

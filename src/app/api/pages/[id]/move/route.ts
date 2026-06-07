@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId, unauthorized, notFound, ownedPage } from '@/lib/session';
 import { serializePage } from '@/lib/notion';
 
-// POST /api/pages/[id]/move
-// body: { parentId?: string|null, position?: number }
-// نقل الصفحة لأب جديد و/أو إعادة ترتيبها. مع حماية ضد جعل الصفحة أب لنفسها/حفيدها.
+// POST /api/pages/[id]/move — body: { parentId?, position? }. ملك المستخدم فقط.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await getUserId();
+    if (!userId) return unauthorized();
     const { id } = await params;
+    const page = await ownedPage(id, userId);
+    if (!page) return notFound('Page');
     const body = await request.json().catch(() => ({}));
     const { parentId, position } = body as { parentId?: string | null; position?: number };
 
-    const page = await db.page.findUnique({ where: { id } });
-    if (!page) {
-      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+    // الأب الجديد لازم يكون ملك نفس المستخدم
+    if (parentId) {
+      const parent = await ownedPage(parentId, userId);
+      if (!parent) return notFound('Parent');
     }
 
     const data: Record<string, unknown> = {};
