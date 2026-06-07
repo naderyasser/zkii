@@ -48,6 +48,7 @@ export interface SerializedPage {
   palette: string | null;
   parentId: string | null;
   type: string;
+  system: boolean;
   content: string | null;
   position: number;
   isFavorite: boolean;
@@ -105,6 +106,7 @@ export function serializePage(
     palette: page.palette,
     parentId: page.parentId,
     type: page.type,
+    system: page.system,
     content: page.content,
     position: page.position,
     isFavorite: page.isFavorite,
