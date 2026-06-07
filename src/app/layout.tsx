@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "@/components/QueryProvider";
 import ThemeProvider from "@/components/ThemeProvider";
+import AuthSessionProvider from "@/components/SessionProvider";
 
 // Amiri — صوت الهوية (عناوين/اقتباسات)
 const amiri = Amiri({
@@ -44,12 +45,14 @@ export default function RootLayout({
       <body
         className={`${amiri.variable} ${ibmPlex.variable} ${ibmMono.variable} font-[family-name:var(--font-ibm-plex)] antialiased bg-background text-foreground`}
       >
-        <ThemeProvider>
-          <QueryProvider>
-            {children}
-          </QueryProvider>
-          <Toaster />
-        </ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider>
+            <QueryProvider>
+              {children}
+            </QueryProvider>
+            <Toaster />
+          </ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );
